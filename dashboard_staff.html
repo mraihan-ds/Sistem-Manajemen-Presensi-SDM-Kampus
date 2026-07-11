@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Staf · Presensi SDM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .sidebar {
+            background: #0f1a2e;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a2a44;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3b5a82;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            color: #94a9c9;
+            transition: all 0.2s;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #ffffff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .badge-notif {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9edf4;
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        .status-badge {
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-hadir {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-izin {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-cuti {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .status-alpha {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .status-terlambat {
+            background: #fce4ec;
+            color: #c62828;
+        }
+        .status-tepat {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            background: #f8fafc;
+            border-left: 4px solid #1e3a5f;
+            transition: all 0.2s;
+        }
+        .notification-item:hover {
+            background: #f1f5f9;
+        }
+        .notification-item.unread {
+            background: #eff6ff;
+            border-left-color: #2563eb;
+        }
+        .notification-item .time {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 40;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        .chart-container {
+            position: relative;
+            height: 220px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2a6 6 0 0 0-6 6v3a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6z" />
+                        <path d="M12 18v3" />
+                        <path d="M8 21h8" />
+                        <path d="M6 11a6 6 0 0 0 12 0" />
+                        <path d="M8 8a4 4 0 0 1 8 0" />
+                        <path d="M10 13a2 2 0 1 1 4 0" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-lg leading-none">Presensi SDM</p>
+                    <p class="text-[#94a9c9] text-xs">Sistem Terintegrasi</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="#" class="nav-link active flex items-center">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📋</span> Rekap Presensi
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📝</span> Surat Izin
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">🏖️</span> Cuti
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">⚠️</span> Kondisi Khusus
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📬</span> Status Pengajuan
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">🔔</span> Notifikasi
+                <span class="badge-notif">3</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <a href="#" class="nav-link flex items-center text-red-400 hover:text-red-300 hover:bg-red-950/30">
+                <span class="icon">🚪</span> Logout
+            </a>
+            <div class="mt-3 flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">DS</div>
+                <div>
+                    <p class="text-white text-sm font-medium">Dr. Siti Rahayu</p>
+                    <p class="text-[#94a9c9] text-xs">Dosen · Teknik Informatika</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-6">
+
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1a2e]">Dashboard</h1>
+                    <p class="text-sm text-gray-500">Selamat datang, Dr. Siti Rahayu</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <button class="p-2 rounded-full bg-white shadow-sm border border-gray-200 relative">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[0.55rem] font-bold rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">Dr. Siti Rahayu</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Date -->
+        <div class="text-sm text-gray-500 mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Jumat, 10 Juli 2026</span>
+            <span class="text-gray-300">•</span>
+            <span class="text-green-600 font-medium">Hari Kerja</span>
+        </div>
+
+        <!-- === STAT CARDS === -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <!-- Hadir -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Hadir</p>
+                        <p class="text-2xl font-bold text-gray-800">✅ 12</p>
+                    </div>
+                    <div class="stat-icon bg-green-100 text-green-600">✓</div>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Dari 16 hari kerja</p>
+            </div>
+
+            <!-- Izin -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Izin</p>
+                        <p class="text-2xl font-bold text-gray-800">📋 2</p>
+                    </div>
+                    <div class="stat-icon bg-yellow-100 text-yellow-600">📝</div>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">1 menunggu approval</p>
+            </div>
+
+            <!-- Cuti -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Cuti</p>
+                        <p class="text-2xl font-bold text-gray-800">🏖️ 3</p>
+                    </div>
+                    <div class="stat-icon bg-blue-100 text-blue-600">🌴</div>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Sisa kuota: 9 hari</p>
+            </div>
+
+            <!-- Alpha -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Alpha</p>
+                        <p class="text-2xl font-bold text-gray-800">❌ 1</p>
+                    </div>
+                    <div class="stat-icon bg-red-100 text-red-600">⚠</div>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Perlu perhatian</p>
+            </div>
+        </div>
+
+        <!-- === ROW 2: CHART + QUICK STATS === -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Chart Card -->
+            <div class="lg:col-span-2 stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-gray-800">📈 Tren Kehadiran Bulanan</h3>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Juli 2026</option>
+                        <option>Juni 2026</option>
+                        <option>Mei 2026</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="space-y-4">
+                <!-- Keterlambatan -->
+                <div class="stat-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">⏰ Keterlambatan</p>
+                            <p class="text-2xl font-bold text-gray-800">2x</p>
+                        </div>
+                        <div class="stat-icon bg-orange-100 text-orange-600">⏱</div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Total 25 menit</p>
+                </div>
+
+                <!-- Sisa Kuota Cuti -->
+                <div class="stat-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">🏖️ Sisa Kuota Cuti</p>
+                            <p class="text-2xl font-bold text-gray-800">9 / 12</p>
+                        </div>
+                        <div class="stat-icon bg-teal-100 text-teal-600">📅</div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                        <div class="bg-teal-500 h-1.5 rounded-full" style="width:75%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === ROW 3: NOTIFICATIONS + PENDING STATUS === -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Notifications -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-gray-800">🔔 Notifikasi Terbaru</h3>
+                    <a href="#" class="text-xs text-[#1e3a5f] font-medium hover:underline">Lihat Semua</a>
+                </div>
+                <div class="space-y-2.5">
+                    <div class="notification-item unread">
+                        <div class="flex items-start gap-2">
+                            <span class="text-green-600 text-lg">✅</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-800">Pengajuan cuti disetujui</p>
+                                <p class="text-xs text-gray-500">Cuti tahunan 3 hari (15-17 Juli) telah disetujui OSDM</p>
+                                <p class="time mt-1">10 menit lalu</p>
+                            </div>
+                            <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>
+                        </div>
+                    </div>
+                    <div class="notification-item unread">
+                        <div class="flex items-start gap-2">
+                            <span class="text-yellow-600 text-lg">⏰</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-800">Pengingat keterlambatan</p>
+                                <p class="text-xs text-gray-500">Anda terlambat 15 menit pada hari Rabu, 8 Juli 2026</p>
+                                <p class="time mt-1">2 jam lalu</p>
+                            </div>
+                            <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>
+                        </div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="flex items-start gap-2">
+                            <span class="text-blue-600 text-lg">📝</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-800">Pengajuan izin diteruskan</p>
+                                <p class="text-xs text-gray-500">Izin dinas luar 9 Juli telah disetujui Kaprodi, menunggu OSDM</p>
+                                <p class="time mt-1">1 hari lalu</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="flex items-start gap-2">
+                            <span class="text-green-600 text-lg">✅</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-800">Presensi manual diinput</p>
+                                <p class="text-xs text-gray-500">Presensi untuk dinas luar (9 Juli) telah diinput Admin</p>
+                                <p class="time mt-1">2 hari lalu</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Pengajuan Terakhir -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-gray-800">📬 Status Pengajuan Terakhir</h3>
+                    <a href="#" class="text-xs text-[#1e3a5f] font-medium hover:underline">Lihat Semua</a>
+                </div>
+                <div class="space-y-3">
+                    <!-- Izin -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg">📋</span>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">Izin Dinas Luar</p>
+                                <p class="text-xs text-gray-500">9 Juli 2026</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-izin">Menunggu OSDM</span>
+                    </div>
+
+                    <!-- Cuti -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg">🏖️</span>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">Cuti Tahunan</p>
+                                <p class="text-xs text-gray-500">15-17 Juli 2026</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-hadir">✅ Disetujui</span>
+                    </div>
+
+                    <!-- Kondisi Khusus -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg">⚠️</span>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">Kondisi Khusus</p>
+                                <p class="text-xs text-gray-500">Lupa Fingerprint · 8 Juli 2026</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-hadir">✅ Diproses Admin</span>
+                    </div>
+
+                    <!-- Alpha Warning -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-red-50 border border-red-200">
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg">❌</span>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">Alpha</p>
+                                <p class="text-xs text-gray-500">6 Juli 2026 · Tanpa Keterangan</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-alpha">Alpha</span>
+                    </div>
+                </div>
+
+                <!-- Quick Action -->
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="px-3 py-2 text-xs font-medium bg-[#1e3a5f] text-white rounded-xl hover:bg-[#14304e] transition-colors">
+                            📝 Izin
+                        </button>
+                        <button class="px-3 py-2 text-xs font-medium bg-[#1e3a5f] text-white rounded-xl hover:bg-[#14304e] transition-colors">
+                            🏖️ Cuti
+                        </button>
+                        <button class="px-3 py-2 text-xs font-medium bg-[#1e3a5f] text-white rounded-xl hover:bg-[#14304e] transition-colors">
+                            ⚠️ Kondisi Khusus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-[0.6rem] text-gray-400 border-t border-gray-200 pt-4">
+            <span>SRS · Sistem Manajemen Presensi SDM Kampus</span>
+            <span class="mx-1.5">•</span>
+            <span>v1.0</span>
+            <span class="mx-1.5">•</span>
+            <span>Dashboard Staf/Dosen</span>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        // ===== CHART.JS =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+            gradient.addColorStop(0, 'rgba(30, 58, 95, 0.2)');
+            gradient.addColorStop(1, 'rgba(30, 58, 95, 0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    datasets: [{
+                        label: 'Jam Kerja Efektif',
+                        data: [7.8, 8.2, 7.5, 8.0, 7.2, 0, 0],
+                        borderColor: '#1e3a5f',
+                        backgroundColor: gradient,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#1e3a5f',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleColor: '#ffffff',
+                            bodyColor: '#94a9c9',
+                            cornerRadius: 10,
+                            padding: 10,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2,
+                                callback: function(value) {
+                                    return value + ' jam';
+                                },
+                                font: { size: 10 },
+                                color: '#94a3b8'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.04)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 }, color: '#94a3b8' }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                }
+            });
+        });
+
+        // Close sidebar on outside click (mobile)
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
