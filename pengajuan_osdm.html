@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pengajuan & Persetujuan · OSDM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .sidebar {
+            background: #0f1a2e;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a2a44;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3b5a82;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            color: #94a9c9;
+            transition: all 0.2s;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #ffffff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .badge-notif {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        .tab-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .tab-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .tab-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .status-badge {
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-menunggu-tahap1 {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-menunggu-tahap2 {
+            background: #fde68a;
+            color: #92400e;
+        }
+        .status-disetujui {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-ditolak {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .status-belum {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-sudah {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .filter-btn {
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .filter-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .filter-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .table-row {
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .table-row:hover {
+            background: #f8fafc;
+        }
+        .table-row td {
+            padding: 0.6rem 0.7rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.82rem;
+            vertical-align: middle;
+        }
+        .table-header th {
+            padding: 0.6rem 0.7rem;
+            text-align: left;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #64748b;
+            border-bottom: 2px solid #e9edf4;
+        }
+        .btn-primary {
+            background: #1e3a5f;
+            color: white;
+            padding: 0.55rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: #14304e;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px -8px rgba(30, 58, 95, 0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-success {
+            background: #15803d;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-success:hover {
+            background: #166534;
+        }
+        .btn-danger {
+            background: #b91c1c;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-danger:hover {
+            background: #991b1b;
+        }
+        .btn-secondary {
+            background: white;
+            color: #0f1a2e;
+            padding: 0.5rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+        .detail-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 60;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .detail-modal.open {
+            display: flex;
+        }
+        .detail-modal .modal-card {
+            background: white;
+            border-radius: 20px;
+            max-width: 640px;
+            width: 100%;
+            padding: 1.75rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .timeline-item {
+            padding-left: 1.5rem;
+            border-left: 2px solid #e9edf4;
+            padding-bottom: 1rem;
+            position: relative;
+        }
+        .timeline-item:last-child {
+            border-left-color: transparent;
+            padding-bottom: 0;
+        }
+        .timeline-item .dot {
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #1e3a5f;
+        }
+        .timeline-item .dot.approved {
+            background: #15803d;
+            box-shadow: 0 0 0 2px #15803d;
+        }
+        .timeline-item .dot.rejected {
+            background: #b91c1c;
+            box-shadow: 0 0 0 2px #b91c1c;
+        }
+        .timeline-item .dot.pending {
+            background: #b45309;
+            box-shadow: 0 0 0 2px #b45309;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+        .kuota-bar {
+            height: 6px;
+            border-radius: 999px;
+            background: #e9edf4;
+            overflow: hidden;
+        }
+        .kuota-bar .fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.8s ease;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 40;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        @media (max-width: 640px) {
+            .tab-btn {
+                font-size: 0.7rem;
+                padding: 0.35rem 0.7rem;
+            }
+            .stat-card {
+                padding: 0.75rem 1rem;
+            }
+            .stat-card .text-2xl {
+                font-size: 1.2rem;
+            }
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .table-wrapper table {
+                min-width: 700px;
+            }
+            .filter-group {
+                flex-wrap: wrap;
+                gap: 0.3rem;
+            }
+            .filter-btn {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.6rem;
+            }
+            .detail-modal .modal-card {
+                padding: 1.25rem;
+                margin: 0.5rem;
+            }
+            .modal-actions {
+                flex-direction: column;
+            }
+            .modal-actions button {
+                width: 100%;
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .toast-notif {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f1a2e;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            max-width: 340px;
+            transform: translateY(120%);
+            transition: transform 0.4s ease;
+            font-size: 0.85rem;
+        }
+        .toast-notif.show {
+            transform: translateY(0);
+        }
+        .toast-notif.success {
+            border-left: 4px solid #15803d;
+        }
+        .toast-notif.error {
+            border-left: 4px solid #b91c1c;
+        }
+        .toast-notif.info {
+            border-left: 4px solid #3b82f6;
+        }
+        .search-input {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #e9edf4;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            width: 180px;
+            transition: all 0.2s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.12);
+        }
+        @media (max-width: 640px) {
+            .search-input {
+                width: 100%;
+            }
+        }
+        .badge-pending {
+            background: #fef3c7;
+            color: #b45309;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2a6 6 0 0 0-6 6v3a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6z" />
+                        <path d="M12 18v3" />
+                        <path d="M8 21h8" />
+                        <path d="M6 11a6 6 0 0 0 12 0" />
+                        <path d="M8 8a4 4 0 0 1 8 0" />
+                        <path d="M10 13a2 2 0 1 1 4 0" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-lg leading-none">Presensi SDM</p>
+                    <p class="text-[#94a9c9] text-xs">Sistem Terintegrasi</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📊</span> Dashboard OSDM
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📋</span> Monitoring &amp; Presensi
+            </a>
+            <a href="#" class="nav-link active flex items-center">
+                <span class="icon">📝</span> Persetujuan
+                <span class="badge-notif">6</span>
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📊</span> Laporan
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">🔔</span> Notifikasi
+                <span class="badge-notif">8</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <a href="#" class="nav-link flex items-center text-red-400 hover:text-red-300 hover:bg-red-950/30">
+                <span class="icon">🚪</span> Logout
+            </a>
+            <div class="mt-3 flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
+                <div>
+                    <p class="text-white text-sm font-medium">OSDM Utama</p>
+                    <p class="text-[#94a9c9] text-xs">Organisasi &amp; SDM</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-6">
+
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1a2e]">📝 Persetujuan Pengajuan</h1>
+                    <p class="text-sm text-gray-500">Kelola dan setujui pengajuan izin, cuti, dan kondisi khusus</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">OSDM Utama</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === TABS === -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button class="tab-btn active" data-tab="izin">📝 Izin <span class="badge-pending ml-1.5">4</span></button>
+            <button class="tab-btn" data-tab="cuti">🏖️ Cuti <span class="badge-pending ml-1.5">2</span></button>
+            <button class="tab-btn" data-tab="kondisi">⚠️ Kondisi Khusus <span class="badge-pending ml-1.5">3</span></button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 1: IZIN -->
+        <!-- ============================================================ -->
+        <div id="tab-izin" class="tab-content active fade-in">
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">Total Pengajuan</p>
+                    <p class="text-2xl font-bold text-[#0f1a2e]">18</p>
+                </div>
+                <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                    <p class="text-xs text-yellow-600 font-medium">⏳ Menunggu Tahap Akhir</p>
+                    <p class="text-2xl font-bold text-yellow-700">4</p>
+                    <p class="text-xs text-yellow-500">Perlu persetujuan Anda</p>
+                </div>
+                <div class="stat-card text-center border-green-200 bg-green-50/50">
+                    <p class="text-xs text-green-600 font-medium">✅ Disetujui</p>
+                    <p class="text-2xl font-bold text-green-700">12</p>
+                    <p class="text-xs text-green-500">66.7%</p>
+                </div>
+                <div class="stat-card text-center border-red-200 bg-red-50/50">
+                    <p class="text-xs text-red-600 font-medium">❌ Ditolak</p>
+                    <p class="text-2xl font-bold text-red-700">2</p>
+                    <p class="text-xs text-red-500">11.1%</p>
+                </div>
+            </div>
+
+            <!-- Filter & Search -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-2 filter-group">
+                    <button class="filter-btn active" data-filter="all">📋 Semua</button>
+                    <button class="filter-btn" data-filter="menunggu">⏳ Menunggu</button>
+                    <button class="filter-btn" data-filter="disetujui">✅ Disetujui</button>
+                    <button class="filter-btn" data-filter="ditolak">❌ Ditolak</button>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="text" class="search-input" placeholder="🔍 Cari pengajuan..." id="searchIzin" />
+                </div>
+            </div>
+
+            <!-- Tabel -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📋 Daftar Pengajuan Izin</h3>
+                    <span class="text-xs text-gray-400" id="izinCount">Menampilkan 8 data</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Pemohon</th>
+                                <th>Unit</th>
+                                <th>Jenis Izin</th>
+                                <th>Tanggal</th>
+                                <th>Status</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="izinTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-2.5 border-t border-[#e9edf4] flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Menampilkan 1-8 dari 18 data</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">«</button>
+                        <button class="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded-lg">1</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">2</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">3</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: CUTI -->
+        <!-- ============================================================ -->
+        <div id="tab-cuti" class="tab-content fade-in">
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">Total Pengajuan</p>
+                    <p class="text-2xl font-bold text-[#0f1a2e]">12</p>
+                </div>
+                <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                    <p class="text-xs text-yellow-600 font-medium">⏳ Menunggu Tahap Akhir</p>
+                    <p class="text-2xl font-bold text-yellow-700">2</p>
+                    <p class="text-xs text-yellow-500">Perlu persetujuan Anda</p>
+                </div>
+                <div class="stat-card text-center border-green-200 bg-green-50/50">
+                    <p class="text-xs text-green-600 font-medium">✅ Disetujui</p>
+                    <p class="text-2xl font-bold text-green-700">8</p>
+                    <p class="text-xs text-green-500">66.7%</p>
+                </div>
+                <div class="stat-card text-center border-red-200 bg-red-50/50">
+                    <p class="text-xs text-red-600 font-medium">❌ Ditolak</p>
+                    <p class="text-2xl font-bold text-red-700">2</p>
+                    <p class="text-xs text-red-500">16.7%</p>
+                </div>
+            </div>
+
+            <!-- Filter & Search -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-2 filter-group">
+                    <button class="filter-btn active" data-filter="all">📋 Semua</button>
+                    <button class="filter-btn" data-filter="menunggu">⏳ Menunggu</button>
+                    <button class="filter-btn" data-filter="disetujui">✅ Disetujui</button>
+                    <button class="filter-btn" data-filter="ditolak">❌ Ditolak</button>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="text" class="search-input" placeholder="🔍 Cari pengajuan..." id="searchCuti" />
+                </div>
+            </div>
+
+            <!-- Tabel -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📋 Daftar Pengajuan Cuti</h3>
+                    <span class="text-xs text-gray-400" id="cutiCount">Menampilkan 8 data</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Pemohon</th>
+                                <th>Unit</th>
+                                <th>Jenis Cuti</th>
+                                <th>Periode</th>
+                                <th>Hari</th>
+                                <th>Status</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cutiTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-2.5 border-t border-[#e9edf4] flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Menampilkan 1-8 dari 12 data</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">«</button>
+                        <button class="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded-lg">1</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">2</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 3: KONDISI KHUSUS -->
+        <!-- ============================================================ -->
+        <div id="tab-kondisi" class="tab-content fade-in">
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">Total Pengajuan</p>
+                    <p class="text-2xl font-bold text-[#0f1a2e]">8</p>
+                </div>
+                <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                    <p class="text-xs text-yellow-600 font-medium">⏳ Menunggu Persetujuan</p>
+                    <p class="text-2xl font-bold text-yellow-700">3</p>
+                    <p class="text-xs text-yellow-500">Perlu persetujuan Anda</p>
+                </div>
+                <div class="stat-card text-center border-green-200 bg-green-50/50">
+                    <p class="text-xs text-green-600 font-medium">✅ Disetujui</p>
+                    <p class="text-2xl font-bold text-green-700">4</p>
+                    <p class="text-xs text-green-500">50%</p>
+                </div>
+                <div class="stat-card text-center border-blue-200 bg-blue-50/50">
+                    <p class="text-xs text-blue-600 font-medium">📥 Sudah Diinput Admin</p>
+                    <p class="text-2xl font-bold text-blue-700">3</p>
+                    <p class="text-xs text-blue-500">dari 4 disetujui</p>
+                </div>
+            </div>
+
+            <!-- Filter & Search -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-2 filter-group">
+                    <button class="filter-btn active" data-filter="all">📋 Semua</button>
+                    <button class="filter-btn" data-filter="menunggu">⏳ Menunggu</button>
+                    <button class="filter-btn" data-filter="disetujui">✅ Disetujui</button>
+                    <button class="filter-btn" data-filter="ditolak">❌ Ditolak</button>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="text" class="search-input" placeholder="🔍 Cari pengajuan..." id="searchKondisi" />
+                </div>
+            </div>
+
+            <!-- Tabel -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📋 Daftar Pengajuan Kondisi Khusus</h3>
+                    <span class="text-xs text-gray-400" id="kondisiCount">Menampilkan 8 data</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Pemohon</th>
+                                <th>Unit</th>
+                                <th>Kategori</th>
+                                <th>Tanggal Kejadian</th>
+                                <th>Status</th>
+                                <th>Input Manual</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kondisiTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-2.5 border-t border-[#e9edf4] flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Menampilkan 1-8 dari 8 data</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">«</button>
+                        <button class="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded-lg">1</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-[0.6rem] text-gray-400 border-t border-gray-200 pt-4">
+            <span>SRS · Sistem Manajemen Presensi SDM Kampus</span>
+            <span class="mx-1.5">•</span>
+            <span>v1.0</span>
+            <span class="mx-1.5">•</span>
+            <span>Pengajuan &amp; Persetujuan OSDM</span>
+        </div>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- DETAIL MODAL -->
+    <!-- ============================================================ -->
+    <div class="detail-modal" id="detailModal">
+        <div class="modal-card">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-[#0f1a2e]" id="modalTitle">Detail Pengajuan</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+
+            <!-- Detail Info -->
+            <div id="modalDetail" class="space-y-3 mb-5">
+                <!-- diisi JS -->
+            </div>
+
+            <!-- Riwayat Approval -->
+            <div class="mb-5">
+                <h4 class="text-sm font-semibold text-[#0f1a2e] mb-3">📜 Riwayat Approval</h4>
+                <div id="modalTimeline">
+                    <!-- diisi JS -->
+                </div>
+            </div>
+
+            <!-- Action Buttons (hanya jika status menunggu) -->
+            <div id="modalActions" class="flex flex-wrap gap-3 pt-4 border-t border-gray-200 modal-actions">
+                <!-- diisi JS -->
+            </div>
+
+            <div class="mt-3">
+                <button onclick="closeModal()" class="btn-secondary w-full text-center py-2 rounded-xl font-medium text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-notif" id="toastNotif"></div>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== TOAST =====
+        let toastTimeout;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotif');
+            toast.textContent = message;
+            toast.className = 'toast-notif ' + type;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // ===== TABS =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-' + tabId).classList.add('active');
+            });
+        });
+
+        // ===== DATA DUMMY =====
+        const izinData = [{
+            id: 1,
+            pemohon: 'Dr. Andi Pratama',
+            unit: 'Teknik Informatika',
+            jenis: 'Dinas Luar',
+            tanggal: '10 Jul 2026',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Tahap Akhir',
+            detail: {
+                jenis: 'Dinas Luar',
+                tanggalMulai: '10 Jul 2026',
+                tanggalSelesai: '10 Jul 2026',
+                alasan: 'Rapat koordinasi dengan mitra industri di luar kampus.',
+                lampiran: 'surat_tugas_dinas_luar.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve', catatan: 'Disetujui, silakan lanjutkan.',
+                    waktu: '9 Jul 2026 10:30' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 2,
+            pemohon: 'Dr. Siti Rahayu',
+            unit: 'Sistem Informasi',
+            jenis: 'Kegiatan Institusi',
+            tanggal: '15 Jul 2026',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Tahap Akhir',
+            detail: {
+                jenis: 'Kegiatan Institusi',
+                tanggalMulai: '15 Jul 2026',
+                tanggalSelesai: '15 Jul 2026',
+                alasan: 'Menjadi pembicara pada seminar nasional kampus.',
+                lampiran: 'undangan_seminar.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Disetujui, mewakili program studi.', waktu: '14 Jul 2026 09:15' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 3,
+            pemohon: 'Agus Wijaya',
+            unit: 'Manajemen',
+            jenis: 'Izin Tidak Masuk',
+            tanggal: '8 Jul 2026',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Tahap Akhir',
+            detail: {
+                jenis: 'Izin Tidak Masuk',
+                tanggalMulai: '8 Jul 2026',
+                tanggalSelesai: '8 Jul 2026',
+                alasan: 'Sakit dan harus istirahat total sesuai anjuran dokter.',
+                lampiran: 'surat_keterangan_sakit.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, semoga lekas sembuh.', waktu: '7 Jul 2026 14:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 4,
+            pemohon: 'Dewi Lestari',
+            unit: 'Akuntansi',
+            jenis: 'Izin Terlambat',
+            tanggal: '6 Jul 2026',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Tahap Akhir',
+            detail: {
+                jenis: 'Izin Terlambat',
+                tanggalMulai: '6 Jul 2026',
+                tanggalSelesai: '6 Jul 2026',
+                alasan: 'Terjebak macet parah di jalan tol.',
+                lampiran: '-'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Diketahui, harap lebih awal.', waktu: '6 Jul 2026 08:30' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 5,
+            pemohon: 'Rudi Hermawan',
+            unit: 'Teknik Elektro',
+            jenis: 'Dinas Luar',
+            tanggal: '3 Jul 2026',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            detail: {
+                jenis: 'Dinas Luar',
+                tanggalMulai: '3 Jul 2026',
+                tanggalSelesai: '3 Jul 2026',
+                alasan: 'Kunjungan industri ke PT. Teknologi Maju.',
+                lampiran: 'surat_tugas_kunjungan.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, jaga nama baik kampus.', waktu: '2 Jul 2026 11:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui, selamat bertugas.',
+                    waktu: '2 Jul 2026 15:20' }
+            ]
+        }, {
+            id: 6,
+            pemohon: 'Andi Pratama',
+            unit: 'Manajemen',
+            jenis: 'Kegiatan Institusi',
+            tanggal: '28 Jun 2026',
+            status: 'ditolak',
+            statusLabel: 'Ditolak',
+            detail: {
+                jenis: 'Kegiatan Institusi',
+                tanggalMulai: '28 Jun 2026',
+                tanggalSelesai: '28 Jun 2026',
+                alasan: 'Mengikuti pelatihan internal kampus.',
+                lampiran: 'surat_pelatihan.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, ikuti dengan baik.', waktu: '27 Jun 2026 09:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Reject',
+                    catatan: 'Ditolak, surat tugas tidak mencantumkan penanggung jawab kegiatan.', waktu: '27 Jun 2026 13:45' }
+            ]
+        }, {
+            id: 7,
+            pemohon: 'Maya Anggraini',
+            unit: 'Sistem Informasi',
+            jenis: 'Izin Tidak Masuk',
+            tanggal: '20 Jun 2026',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            detail: {
+                jenis: 'Izin Tidak Masuk',
+                tanggalMulai: '20 Jun 2026',
+                tanggalSelesai: '20 Jun 2026',
+                alasan: 'Ada keperluan keluarga mendadak.',
+                lampiran: '-'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Disetujui, selesaikan urusan.', waktu: '19 Jun 2026 16:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui.', waktu: '19 Jun 2026 17:30' }
+            ]
+        }, {
+            id: 8,
+            pemohon: 'Fajar Kurniawan',
+            unit: 'Teknik Elektro',
+            jenis: 'Dinas Luar',
+            tanggal: '15 Jun 2026',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            detail: {
+                jenis: 'Dinas Luar',
+                tanggalMulai: '15 Jun 2026',
+                tanggalSelesai: '15 Jun 2026',
+                alasan: 'Survey lapangan untuk proyek penelitian.',
+                lampiran: 'surat_survey.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, hati-hati di lapangan.', waktu: '14 Jun 2026 08:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui, jangan lupa laporan.',
+                    waktu: '14 Jun 2026 10:30' }
+            ]
+        }];
+
+        const cutiData = [{
+            id: 1,
+            pemohon: 'Dr. Budi Santoso',
+            unit: 'Teknik Informatika',
+            jenis: 'Tahunan',
+            periode: '15-17 Jul 2026',
+            hari: 3,
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Tahap Akhir',
+            detail: {
+                jenis: 'Cuti Tahunan',
+                tanggalMulai: '15 Jul 2026',
+                tanggalSelesai: '17 Jul 2026',
+                jumlahHari: 3,
+                alasan: 'Liburan keluarga ke Bali.',
+                lampiran: '-',
+                sisaKuota: 9
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Disetujui, selamat berlibur.', waktu: '14 Jul 2026 10:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 2,
+            pemohon: 'Dr. Siti Rahayu',
+            unit: 'Sistem Informasi',
+            jenis: 'Sakit',
+            periode: '10-12 Jul 2026',
+            hari: 3,
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Tahap Akhir',
+            detail: {
+                jenis: 'Cuti Sakit',
+                tanggalMulai: '10 Jul 2026',
+                tanggalSelesai: '12 Jul 2026',
+                jumlahHari: 3,
+                alasan: 'Demam berdarah, perlu rawat inap.',
+                lampiran: 'surat_rs_dbd.pdf',
+                sisaKuota: 9
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Disetujui, semoga lekas sembuh.', waktu: '9 Jul 2026 13:30' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 3,
+            pemohon: 'Agus Wijaya',
+            unit: 'Manajemen',
+            jenis: 'Tahunan',
+            periode: '5-6 Jul 2026',
+            hari: 2,
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            detail: {
+                jenis: 'Cuti Tahunan',
+                tanggalMulai: '5 Jul 2026',
+                tanggalSelesai: '6 Jul 2026',
+                jumlahHari: 2,
+                alasan: 'Acara keluarga di kampung halaman.',
+                lampiran: '-',
+                sisaKuota: 9
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, selamat jalan.', waktu: '4 Jul 2026 09:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui, kuota cuti terpakai 2 hari.',
+                    waktu: '4 Jul 2026 11:30' }
+            ]
+        }, {
+            id: 4,
+            pemohon: 'Dewi Lestari',
+            unit: 'Akuntansi',
+            jenis: 'Melahirkan',
+            periode: '20 Jun - 20 Jul 2026',
+            hari: 30,
+            status: 'ditolak',
+            statusLabel: 'Ditolak',
+            detail: {
+                jenis: 'Cuti Melahirkan',
+                tanggalMulai: '20 Jun 2026',
+                tanggalSelesai: '20 Jul 2026',
+                jumlahHari: 30,
+                alasan: 'Cuti melahirkan anak pertama.',
+                lampiran: 'surat_hamil_rs.pdf',
+                sisaKuota: 9
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Disetujui, selamat menikmati cuti.', waktu: '19 Jun 2026 08:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Reject',
+                    catatan: 'Ditolak, dokumen pendukung kurang lengkap. Harap lengkapi surat keterangan dari RS.', waktu: '19 Jun 2026 14:00' }
+            ]
+        }, {
+            id: 5,
+            pemohon: 'Rudi Hermawan',
+            unit: 'Teknik Elektro',
+            jenis: 'Khusus',
+            periode: '25-26 Jun 2026',
+            hari: 2,
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            detail: {
+                jenis: 'Cuti Khusus',
+                tanggalMulai: '25 Jun 2026',
+                tanggalSelesai: '26 Jun 2026',
+                jumlahHari: 2,
+                alasan: 'Menghadiri pernikahan saudara.',
+                lampiran: 'undangan_pernikahan.pdf',
+                sisaKuota: 9
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, selamat menghadiri acara.', waktu: '24 Jun 2026 10:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui.', waktu: '24 Jun 2026 13:30' }
+            ]
+        }, {
+            id: 6,
+            pemohon: 'Andi Pratama',
+            unit: 'Manajemen',
+            jenis: 'Sakit',
+            periode: '15-16 Jun 2026',
+            hari: 2,
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            detail: {
+                jenis: 'Cuti Sakit',
+                tanggalMulai: '15 Jun 2026',
+                tanggalSelesai: '16 Jun 2026',
+                jumlahHari: 2,
+                alasan: 'Sakit flu berat, perlu istirahat.',
+                lampiran: 'surat_dokter_flu.pdf',
+                sisaKuota: 9
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, istirahat yang cukup.', waktu: '14 Jun 2026 16:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui.', waktu: '15 Jun 2026 08:30' }
+            ]
+        }];
+
+        const kondisiData = [{
+            id: 1,
+            pemohon: 'Dr. Andi Pratama',
+            unit: 'Teknik Informatika',
+            kategori: 'Dinas Luar',
+            tanggalKejadian: '10 Jul 2026',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Persetujuan',
+            inputManual: false,
+            inputManualLabel: 'Belum',
+            detail: {
+                kategori: 'Dinas Luar',
+                tanggal: '10 Jul 2026',
+                alasan: 'Menghadiri rapat koordinasi mitra industri di luar kampus.',
+                lampiran: 'surat_tugas_dinas_luar.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Diketahui, lanjutkan ke OSDM.', waktu: '9 Jul 2026 14:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 2,
+            pemohon: 'Dr. Siti Rahayu',
+            unit: 'Sistem Informasi',
+            kategori: 'Lupa Fingerprint',
+            tanggalKejadian: '9 Jul 2026',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Persetujuan',
+            inputManual: false,
+            inputManualLabel: 'Belum',
+            detail: {
+                kategori: 'Lupa Fingerprint',
+                tanggal: '9 Jul 2026',
+                alasan: 'Lupa melakukan fingerprint pada saat masuk karena terburu-buru.',
+                lampiran: '-'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Diketahui, lanjutkan ke OSDM.', waktu: '9 Jul 2026 09:30' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 3,
+            pemohon: 'Agus Wijaya',
+            unit: 'Manajemen',
+            kategori: 'Kegiatan Kampus',
+            tanggalKejadian: '8 Jul 2026',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Persetujuan',
+            inputManual: false,
+            inputManualLabel: 'Belum',
+            detail: {
+                kategori: 'Kegiatan Kampus',
+                tanggal: '8 Jul 2026',
+                alasan: 'Mengikuti upacara Dies Natalis kampus di lapangan utama.',
+                lampiran: 'surat_tugas_upacara.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Diketahui, ikuti upacara dengan baik.', waktu: '7 Jul 2026 15:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM',
+                    waktu: '-' }
+            ]
+        }, {
+            id: 4,
+            pemohon: 'Dewi Lestari',
+            unit: 'Akuntansi',
+            kategori: 'Mesin Fingerprint Bermasalah',
+            tanggalKejadian: '5 Jul 2026',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            inputManual: true,
+            inputManualLabel: 'Sudah',
+            detail: {
+                kategori: 'Mesin Fingerprint Bermasalah',
+                tanggal: '5 Jul 2026',
+                alasan: 'Mesin fingerprint di ruang dosen error dan tidak bisa scan sidik jari.',
+                lampiran: 'foto_mesin_error.jpg'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Diketahui, sudah koordinasi dengan IT.', waktu: '5 Jul 2026 08:10' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve',
+                    catatan: 'Disetujui, Admin akan input presensi manual.', waktu: '5 Jul 2026 09:00' }
+            ]
+        }, {
+            id: 5,
+            pemohon: 'Rudi Hermawan',
+            unit: 'Teknik Elektro',
+            kategori: 'Penugasan Lapangan',
+            tanggalKejadian: '3 Jul 2026',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            inputManual: true,
+            inputManualLabel: 'Sudah',
+            detail: {
+                kategori: 'Penugasan Lapangan',
+                tanggal: '3 Jul 2026',
+                alasan: 'Survey lapangan untuk proyek penelitian di daerah terpencil.',
+                lampiran: 'surat_survey_lapangan.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, hati-hati di lapangan.', waktu: '2 Jul 2026 10:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve',
+                    catatan: 'Disetujui, Admin akan input presensi manual.', waktu: '2 Jul 2026 14:30' }
+            ]
+        }, {
+            id: 6,
+            pemohon: 'Maya Anggraini',
+            unit: 'Sistem Informasi',
+            kategori: 'Lupa Fingerprint',
+            tanggalKejadian: '28 Jun 2026',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            inputManual: true,
+            inputManualLabel: 'Sudah',
+            detail: {
+                kategori: 'Lupa Fingerprint',
+                tanggal: '28 Jun 2026',
+                alasan: 'Lupa fingerprint karena datang terlambat dan terburu-buru.',
+                lampiran: '-'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Budi', keputusan: 'Approve',
+                    catatan: 'Diketahui, lain kali lebih disiplin.', waktu: '28 Jun 2026 09:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve',
+                    catatan: 'Disetujui, Admin akan input presensi manual.', waktu: '28 Jun 2026 10:30' }
+            ]
+        }, {
+            id: 7,
+            pemohon: 'Fajar Kurniawan',
+            unit: 'Teknik Elektro',
+            kategori: 'Kegiatan Kampus',
+            tanggalKejadian: '20 Jun 2026',
+            status: 'ditolak',
+            statusLabel: 'Ditolak',
+            inputManual: false,
+            inputManualLabel: '—',
+            detail: {
+                kategori: 'Kegiatan Kampus',
+                tanggal: '20 Jun 2026',
+                alasan: 'Mengikuti kegiatan bakti sosial kampus.',
+                lampiran: 'surat_bakti_sosial.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Diketahui, ikuti dengan baik.', waktu: '19 Jun 2026 14:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Reject',
+                    catatan: 'Ditolak, kegiatan tidak termasuk dalam kategori yang diizinkan untuk presensi manual.', waktu: '19 Jun 2026 16:30' }
+            ]
+        }, {
+            id: 8,
+            pemohon: 'Andi Pratama',
+            unit: 'Manajemen',
+            kategori: 'Dinas Luar',
+            tanggalKejadian: '15 Jun 2026',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            inputManual: false,
+            inputManualLabel: 'Belum',
+            detail: {
+                kategori: 'Dinas Luar',
+                tanggal: '15 Jun 2026',
+                alasan: 'Kunjungan ke PT. Industri Kreatif untuk kerja sama.',
+                lampiran: 'surat_kunjungan_industri.pdf'
+            },
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Atasan Langsung', keputusan: 'Approve',
+                    catatan: 'Disetujui, jaga hubungan baik.', waktu: '14 Jun 2026 11:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve',
+                    catatan: 'Disetujui, Admin akan input presensi manual.', waktu: '14 Jun 2026 15:00' }
+            ]
+        }];
+
+        // ===== RENDER TABEL IZIN =====
+        function renderIzinTable(filter = 'all') {
+            const tbody = document.getElementById('izinTableBody');
+            let data = izinData;
+            if (filter === 'menunggu') data = data.filter(d => d.status === 'menunggu-tahap2');
+            else if (filter === 'disetujui') data = data.filter(d => d.status === 'disetujui');
+            else if (filter === 'ditolak') data = data.filter(d => d.status === 'ditolak');
+
+            const statusMap = {
+                'menunggu-tahap2': 'status-menunggu-tahap2',
+                'disetujui': 'status-disetujui',
+                'ditolak': 'status-ditolak'
+            };
+
+            tbody.innerHTML = data.map(d => `
+                    <tr class="table-row" onclick="openDetail('izin', ${d.id})">
+                        <td class="font-medium text-[#0f1a2e]">${d.pemohon}</td>
+                        <td class="text-gray-600">${d.unit}</td>
+                        <td class="text-gray-600">${d.jenis}</td>
+                        <td class="text-gray-600">${d.tanggal}</td>
+                        <td><span class="status-badge ${statusMap[d.status] || ''}">${d.statusLabel}</span></td>
+                        <td class="text-center">
+                            <button class="text-xs text-[#1e3a5f] font-medium hover:underline" onclick="event.stopPropagation(); openDetail('izin', ${d.id})">
+                                📋 Detail
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            document.getElementById('izinCount').textContent = `Menampilkan ${data.length} data`;
+        }
+
+        // ===== RENDER TABEL CUTI =====
+        function renderCutiTable(filter = 'all') {
+            const tbody = document.getElementById('cutiTableBody');
+            let data = cutiData;
+            if (filter === 'menunggu') data = data.filter(d => d.status === 'menunggu-tahap2');
+            else if (filter === 'disetujui') data = data.filter(d => d.status === 'disetujui');
+            else if (filter === 'ditolak') data = data.filter(d => d.status === 'ditolak');
+
+            const statusMap = {
+                'menunggu-tahap2': 'status-menunggu-tahap2',
+                'disetujui': 'status-disetujui',
+                'ditolak': 'status-ditolak'
+            };
+
+            tbody.innerHTML = data.map(d => `
+                    <tr class="table-row" onclick="openDetail('cuti', ${d.id})">
+                        <td class="font-medium text-[#0f1a2e]">${d.pemohon}</td>
+                        <td class="text-gray-600">${d.unit}</td>
+                        <td class="text-gray-600">${d.jenis}</td>
+                        <td class="text-gray-600">${d.periode}</td>
+                        <td class="text-gray-600 text-center">${d.hari}</td>
+                        <td><span class="status-badge ${statusMap[d.status] || ''}">${d.statusLabel}</span></td>
+                        <td class="text-center">
+                            <button class="text-xs text-[#1e3a5f] font-medium hover:underline" onclick="event.stopPropagation(); openDetail('cuti', ${d.id})">
+                                📋 Detail
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            document.getElementById('cutiCount').textContent = `Menampilkan ${data.length} data`;
+        }
+
+        // ===== RENDER TABEL KONDISI =====
+        function renderKondisiTable(filter = 'all') {
+            const tbody = document.getElementById('kondisiTableBody');
+            let data = kondisiData;
+            if (filter === 'menunggu') data = data.filter(d => d.status === 'menunggu-tahap2');
+            else if (filter === 'disetujui') data = data.filter(d => d.status === 'disetujui');
+            else if (filter === 'ditolak') data = data.filter(d => d.status === 'ditolak');
+
+            const statusMap = {
+                'menunggu-tahap2': 'status-menunggu-tahap2',
+                'disetujui': 'status-disetujui',
+                'ditolak': 'status-ditolak'
+            };
+            const inputMap = {
+                'Belum': 'status-belum',
+                'Sudah': 'status-sudah',
+                '—': ''
+            };
+
+            tbody.innerHTML = data.map(d => `
+                    <tr class="table-row" onclick="openDetail('kondisi', ${d.id})">
+                        <td class="font-medium text-[#0f1a2e]">${d.pemohon}</td>
+                        <td class="text-gray-600">${d.unit}</td>
+                        <td class="text-gray-600">${d.kategori}</td>
+                        <td class="text-gray-600">${d.tanggalKejadian}</td>
+                        <td><span class="status-badge ${statusMap[d.status] || ''}">${d.statusLabel}</span></td>
+                        <td><span class="status-badge ${inputMap[d.inputManualLabel] || ''}">${d.inputManualLabel}</span></td>
+                        <td class="text-center">
+                            <button class="text-xs text-[#1e3a5f] font-medium hover:underline" onclick="event.stopPropagation(); openDetail('kondisi', ${d.id})">
+                                📋 Detail
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            document.getElementById('kondisiCount').textContent = `Menampilkan ${data.length} data`;
+        }
+
+        // ===== FILTER HANDLERS =====
+        document.querySelectorAll('#tab-izin .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#tab-izin .filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                renderIzinTable(this.dataset.filter);
+            });
+        });
+
+        document.querySelectorAll('#tab-cuti .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#tab-cuti .filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                renderCutiTable(this.dataset.filter);
+            });
+        });
+
+        document.querySelectorAll('#tab-kondisi .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#tab-kondisi .filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                renderKondisiTable(this.dataset.filter);
+            });
+        });
+
+        // ===== SEARCH =====
+        document.getElementById('searchIzin').addEventListener('input', function() {
+            const search = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#izinTableBody .table-row');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('searchCuti').addEventListener('input', function() {
+            const search = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#cutiTableBody .table-row');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('searchKondisi').addEventListener('input', function() {
+            const search = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#kondisiTableBody .table-row');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        });
+
+        // ===== DETAIL MODAL =====
+        let currentType = '';
+        let currentId = null;
+
+        function openDetail(type, id) {
+            currentType = type;
+            currentId = id;
+
+            let data;
+            if (type === 'izin') data = izinData.find(d => d.id === id);
+            else if (type === 'cuti') data = cutiData.find(d => d.id === id);
+            else if (type === 'kondisi') data = kondisiData.find(d => d.id === id);
+
+            if (!data) return;
+
+            const isWaiting = data.status === 'menunggu-tahap2';
+
+            // Title
+            const typeLabels = { izin: 'Surat Izin', cuti: 'Cuti', kondisi: 'Kondisi Khusus' };
+            document.getElementById('modalTitle').textContent = `📝 ${typeLabels[type]} - ${data.pemohon}`;
+
+            // Detail
+            let detailHtml = '';
+            if (type === 'izin') {
+                detailHtml = `
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div><p class="text-xs text-gray-400">Jenis Izin</p><p class="font-medium text-[#0f1a2e]">${data.detail.jenis}</p></div>
+                            <div><p class="text-xs text-gray-400">Tanggal</p><p class="font-medium text-[#0f1a2e]">${data.detail.tanggalMulai}</p></div>
+                            <div class="col-span-2"><p class="text-xs text-gray-400">Alasan</p><p class="text-sm text-[#0f1a2e] bg-gray-50 p-2 rounded-lg border border-gray-100">${data.detail.alasan}</p></div>
+                            <div><p class="text-xs text-gray-400">Lampiran</p><p class="font-medium text-[#0f1a2e]">${data.detail.lampiran !== '-' ? '📎 ' + data.detail.lampiran : '-'}</p></div>
+                            <div><p class="text-xs text-gray-400">Status</p><span class="status-badge ${data.status === 'menunggu-tahap2' ? 'status-menunggu-tahap2' : data.status === 'disetujui' ? 'status-disetujui' : 'status-ditolak'}">${data.statusLabel}</span></div>
+                        </div>
+                    `;
+            } else if (type === 'cuti') {
+                detailHtml = `
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div><p class="text-xs text-gray-400">Jenis Cuti</p><p class="font-medium text-[#0f1a2e]">${data.detail.jenis}</p></div>
+                            <div><p class="text-xs text-gray-400">Jumlah Hari</p><p class="font-medium text-[#0f1a2e]">${data.detail.jumlahHari} hari</p></div>
+                            <div><p class="text-xs text-gray-400">Periode</p><p class="font-medium text-[#0f1a2e]">${data.detail.tanggalMulai} - ${data.detail.tanggalSelesai}</p></div>
+                            <div><p class="text-xs text-gray-400">Sisa Kuota</p><p class="font-medium text-[#0f1a2e]">${data.detail.sisaKuota} hari</p></div>
+                            <div class="col-span-2"><p class="text-xs text-gray-400">Alasan</p><p class="text-sm text-[#0f1a2e] bg-gray-50 p-2 rounded-lg border border-gray-100">${data.detail.alasan || '-'}</p></div>
+                            <div><p class="text-xs text-gray-400">Lampiran</p><p class="font-medium text-[#0f1a2e]">${data.detail.lampiran !== '-' ? '📎 ' + data.detail.lampiran : '-'}</p></div>
+                            <div><p class="text-xs text-gray-400">Status</p><span class="status-badge ${data.status === 'menunggu-tahap2' ? 'status-menunggu-tahap2' : data.status === 'disetujui' ? 'status-disetujui' : 'status-ditolak'}">${data.statusLabel}</span></div>
+                        </div>
+                        ${data.detail.jenis === 'Tahunan' ? `
+                        <div class="mt-2">
+                            <p class="text-xs text-gray-400 mb-1">Kuota Cuti</p>
+                            <div class="flex items-center gap-3">
+                                <div class="kuota-bar flex-1">
+                                    <div class="fill bg-[#1e3a5f]" style="width: ${((data.detail.sisaKuota || 9) / 12) * 100}%"></div>
+                                </div>
+                                <span class="text-xs font-medium text-[#0f1a2e]">${data.detail.sisaKuota || 9}/12</span>
+                            </div>
+                        </div>` : ''}
+                    `;
+            } else if (type === 'kondisi') {
+                detailHtml = `
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div><p class="text-xs text-gray-400">Kategori</p><p class="font-medium text-[#0f1a2e]">${data.detail.kategori}</p></div>
+                            <div><p class="text-xs text-gray-400">Tanggal Kejadian</p><p class="font-medium text-[#0f1a2e]">${data.detail.tanggal}</p></div>
+                            <div class="col-span-2"><p class="text-xs text-gray-400">Alasan</p><p class="text-sm text-[#0f1a2e] bg-gray-50 p-2 rounded-lg border border-gray-100">${data.detail.alasan}</p></div>
+                            <div><p class="text-xs text-gray-400">Lampiran</p><p class="font-medium text-[#0f1a2e]">${data.detail.lampiran !== '-' ? '📎 ' + data.detail.lampiran : '-'}</p></div>
+                            <div><p class="text-xs text-gray-400">Status</p><span class="status-badge ${data.status === 'menunggu-tahap2' ? 'status-menunggu-tahap2' : data.status === 'disetujui' ? 'status-disetujui' : 'status-ditolak'}">${data.statusLabel}</span></div>
+                            <div><p class="text-xs text-gray-400">Input Manual Admin</p><span class="status-badge ${data.inputManual ? 'status-sudah' : 'status-belum'}">${data.inputManualLabel}</span></div>
+                        </div>
+                    `;
+            }
+
+            document.getElementById('modalDetail').innerHTML = detailHtml;
+
+            // Timeline
+            let timelineHtml = '';
+            data.riwayat.forEach((r, index) => {
+                const isLast = index === data.riwayat.length - 1;
+                const dotClass = r.keputusan === 'Approve' ? 'approved' : r.keputusan === 'Reject' ? 'rejected' :
+                    'pending';
+                const statusText = r.keputusan === 'Approve' ? '✅ Disetujui' : r.keputusan === 'Reject' ? '❌ Ditolak' :
+                    '⏳ Menunggu';
+                const waktuText = r.waktu !== '-' ? r.waktu : 'Menunggu';
+
+                timelineHtml += `
+                        <div class="timeline-item ${isLast ? '' : ''}">
+                            <div class="dot ${dotClass}"></div>
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-[#0f1a2e]">${r.tahap}</p>
+                                    <p class="text-xs text-gray-500">${r.approver}</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">${statusText}</p>
+                                    ${r.catatan && r.catatan !== '-' ? `<p class="text-xs text-gray-500 mt-1 italic">"${r.catatan}"</p>` : ''}
+                                </div>
+                                <span class="text-xs text-gray-400 shrink-0 ml-3">${waktuText}</span>
+                            </div>
+                        </div>
+                    `;
+            });
+
+            document.getElementById('modalTimeline').innerHTML = timelineHtml;
+
+            // Actions
+            const actionsContainer = document.getElementById('modalActions');
+            if (isWaiting) {
+                actionsContainer.innerHTML = `
+                        <button class="btn-success" onclick="handleApproval('approve')">✅ Setujui</button>
+                        <button class="btn-danger" onclick="handleApproval('reject')">❌ Tolak</button>
+                        <button class="btn-secondary" onclick="closeModal()">Tutup</button>
+                    `;
+            } else {
+                actionsContainer.innerHTML = `
+                        <span class="text-sm text-gray-500">${data.status === 'disetujui' ? '✅ Pengajuan telah disetujui' : '❌ Pengajuan telah ditolak'}</span>
+                        <button class="btn-secondary" onclick="closeModal()">Tutup</button>
+                    `;
+            }
+
+            document.getElementById('detailModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // ===== HANDLE APPROVAL =====
+        function handleApproval(decision) {
+            if (currentType && currentId) {
+                const action = decision === 'approve' ? '✅ Disetujui' : '❌ Ditolak';
+                const message = decision === 'approve' ?
+                    `Pengajuan berhasil disetujui. Status: Disetujui` :
+                    `Pengajuan berhasil ditolak. Status: Ditolak`;
+
+                showToast(`📝 ${message}`, decision === 'approve' ? 'success' : 'error');
+
+                // Update data dummy (simulasi)
+                let data;
+                if (currentType === 'izin') data = izinData.find(d => d.id === currentId);
+                else if (currentType === 'cuti') data = cutiData.find(d => d.id === currentId);
+                else if (currentType === 'kondisi') data = kondisiData.find(d => d.id === currentId);
+
+                if (data) {
+                    data.status = decision === 'approve' ? 'disetujui' : 'ditolak';
+                    data.statusLabel = decision === 'approve' ? 'Disetujui' : 'Ditolak';
+                    // Update riwayat
+                    const lastIdx = data.riwayat.length - 1;
+                    if (data.riwayat[lastIdx] && data.riwayat[lastIdx].keputusan === 'Pending') {
+                        data.riwayat[lastIdx].keputusan = decision === 'approve' ? 'Approve' : 'Reject';
+                        data.riwayat[lastIdx].waktu = new Date().toLocaleString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        data.riwayat[lastIdx].catatan = decision === 'approve' ?
+                            'Disetujui oleh OSDM.' :
+                            'Ditolak oleh OSDM. Silakan perbaiki dan ajukan ulang.';
+                    }
+                }
+
+                // Re-render semua tabel
+                renderIzinTable(document.querySelector('#tab-izin .filter-btn.active')?.dataset?.filter || 'all');
+                renderCutiTable(document.querySelector('#tab-cuti .filter-btn.active')?.dataset?.filter || 'all');
+                renderKondisiTable(document.querySelector('#tab-kondisi .filter-btn.active')?.dataset?.filter || 'all');
+
+                closeModal();
+            }
+        }
+
+        // ===== MODAL CONTROLS =====
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // ===== INIT =====
+        renderIzinTable('all');
+        renderCutiTable('all');
+        renderKondisiTable('all');
+
+        // Update badge counts
+        document.querySelector('.tab-btn[data-tab="izin"] .badge-pending').textContent =
+            izinData.filter(d => d.status === 'menunggu-tahap2').length;
+        document.querySelector('.tab-btn[data-tab="cuti"] .badge-pending').textContent =
+            cutiData.filter(d => d.status === 'menunggu-tahap2').length;
+        document.querySelector('.tab-btn[data-tab="kondisi"] .badge-pending').textContent =
+            kondisiData.filter(d => d.status === 'menunggu-tahap2').length;
+    </script>
+</body>
+</html>

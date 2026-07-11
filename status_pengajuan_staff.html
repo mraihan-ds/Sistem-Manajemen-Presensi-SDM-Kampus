@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Status Pengajuan · Staf</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .sidebar {
+            background: #0f1a2e;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a2a44;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3b5a82;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            color: #94a9c9;
+            transition: all 0.2s;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #ffffff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .badge-notif {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-menunggu-tahap1 {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-menunggu-tahap2 {
+            background: #fde68a;
+            color: #92400e;
+        }
+        .status-disetujui {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-ditolak {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .filter-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .filter-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .filter-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .table-row {
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .table-row:hover {
+            background: #f8fafc;
+        }
+        .table-row td {
+            padding: 0.75rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+        .table-header th {
+            padding: 0.7rem 0.75rem;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #64748b;
+            border-bottom: 2px solid #e9edf4;
+        }
+        .detail-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 60;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .detail-modal.open {
+            display: flex;
+        }
+        .detail-modal .modal-card {
+            background: white;
+            border-radius: 20px;
+            max-width: 560px;
+            width: 100%;
+            padding: 2rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .timeline-item {
+            padding-left: 1.5rem;
+            border-left: 2px solid #e9edf4;
+            padding-bottom: 1.2rem;
+            position: relative;
+        }
+        .timeline-item:last-child {
+            border-left-color: transparent;
+            padding-bottom: 0;
+        }
+        .timeline-item .dot {
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #1e3a5f;
+        }
+        .timeline-item .dot.approved {
+            background: #15803d;
+            box-shadow: 0 0 0 2px #15803d;
+        }
+        .timeline-item .dot.rejected {
+            background: #b91c1c;
+            box-shadow: 0 0 0 2px #b91c1c;
+        }
+        .timeline-item .dot.pending {
+            background: #b45309;
+            box-shadow: 0 0 0 2px #b45309;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 40;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        @media (max-width: 640px) {
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .table-wrapper table {
+                min-width: 650px;
+            }
+            .filter-group {
+                flex-wrap: wrap;
+                gap: 0.4rem;
+            }
+            .filter-btn {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.7rem;
+            }
+            .stat-card p.text-2xl {
+                font-size: 1.3rem;
+            }
+            .detail-modal .modal-card {
+                padding: 1.25rem;
+                margin: 0.5rem;
+            }
+        }
+        .badge-count {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            margin-left: 0.3rem;
+        }
+        .badge-count.menunggu {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .badge-count.disetujui {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-count.ditolak {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .jenis-icon {
+            font-size: 1.1rem;
+            margin-right: 0.4rem;
+        }
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e9edf4;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            width: 200px;
+            transition: all 0.2s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
+        }
+        @media (max-width: 640px) {
+            .search-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2a6 6 0 0 0-6 6v3a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6z" />
+                        <path d="M12 18v3" />
+                        <path d="M8 21h8" />
+                        <path d="M6 11a6 6 0 0 0 12 0" />
+                        <path d="M8 8a4 4 0 0 1 8 0" />
+                        <path d="M10 13a2 2 0 1 1 4 0" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-lg leading-none">Presensi SDM</p>
+                    <p class="text-[#94a9c9] text-xs">Sistem Terintegrasi</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📋</span> Rekap Presensi
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📝</span> Pengajuan
+            </a>
+            <a href="#" class="nav-link active flex items-center">
+                <span class="icon">📬</span> Status Pengajuan
+                <span class="badge-notif">5</span>
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">🔔</span> Notifikasi
+                <span class="badge-notif">3</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <a href="#" class="nav-link flex items-center text-red-400 hover:text-red-300 hover:bg-red-950/30">
+                <span class="icon">🚪</span> Logout
+            </a>
+            <div class="mt-3 flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                <div>
+                    <p class="text-white text-sm font-medium">Dr. Siti Rahayu</p>
+                    <p class="text-[#94a9c9] text-xs">Dosen · Teknik Informatika</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-6">
+
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1a2e]">📬 Status Pengajuan</h1>
+                    <p class="text-sm text-gray-500">Pantau status izin, cuti, dan kondisi khusus Anda</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <button class="p-2 rounded-full bg-white shadow-sm border border-gray-200 relative">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[0.55rem] font-bold rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">Dr. Siti Rahayu</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === STATISTIK RINGKAS === -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+            <div class="stat-card text-center">
+                <p class="text-xs text-gray-500 font-medium">Total Pengajuan</p>
+                <p class="text-2xl font-bold text-[#0f1a2e]">8</p>
+            </div>
+            <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                <p class="text-xs text-yellow-600 font-medium">⏳ Menunggu</p>
+                <p class="text-2xl font-bold text-yellow-700">3</p>
+                <p class="text-xs text-yellow-500">Tahap 1: 2 · Tahap 2: 1</p>
+            </div>
+            <div class="stat-card text-center border-green-200 bg-green-50/50">
+                <p class="text-xs text-green-600 font-medium">✅ Disetujui</p>
+                <p class="text-2xl font-bold text-green-700">4</p>
+                <p class="text-xs text-green-500">50%</p>
+            </div>
+            <div class="stat-card text-center border-red-200 bg-red-50/50">
+                <p class="text-xs text-red-600 font-medium">❌ Ditolak</p>
+                <p class="text-2xl font-bold text-red-700">1</p>
+                <p class="text-xs text-red-500">12.5%</p>
+            </div>
+            <div class="stat-card text-center border-blue-200 bg-blue-50/50">
+                <p class="text-xs text-blue-600 font-medium">📋 Jenis</p>
+                <p class="text-2xl font-bold text-blue-700">3</p>
+                <p class="text-xs text-blue-500">Izin · Cuti · Kondisi</p>
+            </div>
+        </div>
+
+        <!-- === FILTER & SEARCH === -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div class="flex flex-wrap items-center gap-2 filter-group">
+                <button class="filter-btn active" data-filter="all">📋 Semua</button>
+                <button class="filter-btn" data-filter="menunggu">⏳ Menunggu</button>
+                <button class="filter-btn" data-filter="disetujui">✅ Disetujui</button>
+                <button class="filter-btn" data-filter="ditolak">❌ Ditolak</button>
+                <button class="filter-btn" data-filter="izin">📝 Izin</button>
+                <button class="filter-btn" data-filter="cuti">🏖️ Cuti</button>
+                <button class="filter-btn" data-filter="kondisi">⚠️ Kondisi</button>
+            </div>
+            <div>
+                <input type="text" class="search-input" placeholder="🔍 Cari pengajuan..." id="searchInput" />
+            </div>
+        </div>
+
+        <!-- === TABEL PENGAJUAN === -->
+        <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-[#e9edf4] flex items-center justify-between">
+                <h3 class="font-semibold text-[#0f1a2e]">📋 Daftar Pengajuan</h3>
+                <span class="text-xs text-gray-400">Menampilkan 8 data</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="w-full" id="pengajuanTable">
+                    <thead class="table-header">
+                        <tr>
+                            <th>Jenis</th>
+                            <th>Tanggal Pengajuan</th>
+                            <th>Periode</th>
+                            <th>Status</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data akan di-render oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="px-4 py-3 border-t border-[#e9edf4] flex items-center justify-between">
+                <span class="text-xs text-gray-500" id="paginationInfo">Menampilkan 1-8 dari 8 data</span>
+                <div class="flex gap-1">
+                    <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50" id="prevPage">«</button>
+                    <button class="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded-lg" id="pageIndicator">1</button>
+                    <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50" id="nextPage">»</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-[0.6rem] text-gray-400 border-t border-gray-200 pt-4">
+            <span>SRS · Sistem Manajemen Presensi SDM Kampus</span>
+            <span class="mx-1.5">•</span>
+            <span>v1.0</span>
+            <span class="mx-1.5">•</span>
+            <span>Status &amp; Riwayat Pengajuan</span>
+        </div>
+    </main>
+
+    <!-- === DETAIL MODAL === -->
+    <div class="detail-modal" id="detailModal">
+        <div class="modal-card">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-[#0f1a2e]" id="modalTitle">Detail Pengajuan</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+
+            <!-- Detail Info -->
+            <div class="space-y-3 mb-5" id="modalDetail">
+                <!-- diisi JS -->
+            </div>
+
+            <!-- Riwayat Approval -->
+            <div>
+                <h4 class="text-sm font-semibold text-[#0f1a2e] mb-3">📜 Riwayat Approval</h4>
+                <div id="modalTimeline">
+                    <!-- diisi JS -->
+                </div>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-gray-200">
+                <button onclick="closeModal()" class="btn-secondary w-full text-center py-2 rounded-xl border border-gray-200 hover:bg-gray-50 font-medium text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .btn-secondary {
+            background: white;
+            color: #0f1a2e;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+    </style>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== DATA PENGAJUAN (Dummy) =====
+        const pengajuanData = [{
+            id: 1,
+            jenis: 'izin',
+            jenisLabel: 'Izin Dinas Luar',
+            icon: '🏢',
+            tanggalPengajuan: '2026-07-09',
+            tanggalMulai: '2026-07-09',
+            tanggalSelesai: '2026-07-09',
+            alasan: 'Menghadiri rapat koordinasi dengan mitra industri di luar kampus.',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Tahap Akhir',
+            lampiran: 'surat_tugas_dinas_luar.pdf',
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Andi', keputusan: 'Approve', catatan: 'Disetujui, silakan lanjutkan.', waktu: '2026-07-09 10:30' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM', waktu: '-' }
+            ]
+        }, {
+            id: 2,
+            jenis: 'cuti',
+            jenisLabel: 'Cuti Tahunan',
+            icon: '🏖️',
+            tanggalPengajuan: '2026-07-05',
+            tanggalMulai: '2026-07-15',
+            tanggalSelesai: '2026-07-17',
+            alasan: 'Liburan keluarga ke Bali.',
+            status: 'menunggu-tahap1',
+            statusLabel: 'Menunggu Tahap 1',
+            lampiran: '-',
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Andi', keputusan: 'Pending', catatan: 'Menunggu persetujuan Kaprodi', waktu: '-' }
+            ]
+        }, {
+            id: 3,
+            jenis: 'kondisi',
+            jenisLabel: 'Lupa Fingerprint',
+            icon: '🖐️',
+            tanggalPengajuan: '2026-07-04',
+            tanggalMulai: '2026-07-04',
+            tanggalSelesai: '2026-07-04',
+            alasan: 'Lupa melakukan fingerprint pada saat masuk karena terburu-buru.',
+            status: 'menunggu-tahap2',
+            statusLabel: 'Menunggu Tahap Akhir',
+            lampiran: '-',
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Andi', keputusan: 'Approve', catatan: 'Diketahui, lanjutkan ke OSDM.', waktu: '2026-07-04 14:20' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Pending', catatan: 'Menunggu verifikasi OSDM', waktu: '-' }
+            ]
+        }, {
+            id: 4,
+            jenis: 'izin',
+            jenisLabel: 'Izin Tidak Masuk',
+            icon: '🚫',
+            tanggalPengajuan: '2026-06-28',
+            tanggalMulai: '2026-06-28',
+            tanggalSelesai: '2026-06-28',
+            alasan: 'Sakit dan harus istirahat total sesuai anjuran dokter.',
+            status: 'ditolak',
+            statusLabel: 'Ditolak',
+            lampiran: 'surat_keterangan_sakit.pdf',
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Andi', keputusan: 'Reject', catatan: 'Mohon dilengkapi dengan surat dokter yang lebih jelas.', waktu: '2026-06-28 09:15' },
+                { tahap: 'Tahap Akhir', approver: '-', keputusan: '-', catatan: 'Proses berhenti di tahap 1', waktu: '-' }
+            ]
+        }, {
+            id: 5,
+            jenis: 'cuti',
+            jenisLabel: 'Cuti Sakit',
+            icon: '🏥',
+            tanggalPengajuan: '2026-06-20',
+            tanggalMulai: '2026-06-21',
+            tanggalSelesai: '2026-06-23',
+            alasan: 'Sakit demam berdarah, perlu rawat inap.',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            lampiran: 'surat_rs_dbd.pdf',
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Andi', keputusan: 'Approve', catatan: 'Disetujui, semoga lekas sembuh.', waktu: '2026-06-20 13:45' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui, kuota cuti terpakai 3 hari.', waktu: '2026-06-21 08:30' }
+            ]
+        }, {
+            id: 6,
+            jenis: 'izin',
+            jenisLabel: 'Izin Kegiatan Institusi',
+            icon: '🎓',
+            tanggalPengajuan: '2026-06-10',
+            tanggalMulai: '2026-06-11',
+            tanggalSelesai: '2026-06-11',
+            alasan: 'Menjadi pembicara pada seminar nasional yang diadakan kampus.',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            lampiran: 'undangan_seminar.pdf',
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Andi', keputusan: 'Approve', catatan: 'Disetujui, mewakili program studi.', waktu: '2026-06-10 11:00' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui, jangan lupa laporan kegiatan.', waktu: '2026-06-10 15:20' }
+            ]
+        }, {
+            id: 7,
+            jenis: 'kondisi',
+            jenisLabel: 'Mesin Fingerprint Bermasalah',
+            icon: '🔧',
+            tanggalPengajuan: '2026-06-05',
+            tanggalMulai: '2026-06-05',
+            tanggalSelesai: '2026-06-05',
+            alasan: 'Mesin fingerprint di ruang dosen error dan tidak bisa scan sidik jari.',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            lampiran: 'foto_mesin_error.jpg',
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Andi', keputusan: 'Approve', catatan: 'Diketahui, sudah koordinasi dengan IT.', waktu: '2026-06-05 08:10' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui, Admin akan input presensi manual.', waktu: '2026-06-05 09:00' }
+            ]
+        }, {
+            id: 8,
+            jenis: 'kondisi',
+            jenisLabel: 'Kegiatan Kampus',
+            icon: '🎓',
+            tanggalPengajuan: '2026-06-02',
+            tanggalMulai: '2026-06-02',
+            tanggalSelesai: '2026-06-02',
+            alasan: 'Mengikuti upacara Dies Natalis kampus di lapangan utama.',
+            status: 'disetujui',
+            statusLabel: 'Disetujui',
+            lampiran: 'surat_tugas_upacara.pdf',
+            riwayat: [
+                { tahap: 'Tahap 1', approver: 'Kaprodi Dr. Andi', keputusan: 'Approve', catatan: 'Disetujui, ikuti upacara dengan baik.', waktu: '2026-06-02 07:30' },
+                { tahap: 'Tahap Akhir', approver: 'OSDM', keputusan: 'Approve', catatan: 'Disetujui, presensi manual akan diinput Admin.', waktu: '2026-06-02 08:15' }
+            ]
+        }];
+
+        // ===== RENDER TABLE =====
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let currentPage = 1;
+        const itemsPerPage = 5;
+
+        function getStatusBadge(status) {
+            const map = {
+                'menunggu-tahap1': 'status-menunggu-tahap1',
+                'menunggu-tahap2': 'status-menunggu-tahap2',
+                'disetujui': 'status-disetujui',
+                'ditolak': 'status-ditolak'
+            };
+            return map[status] || 'status-menunggu-tahap1';
+        }
+
+        function getStatusEmoji(status) {
+            const map = {
+                'menunggu-tahap1': '⏳',
+                'menunggu-tahap2': '⏳',
+                'disetujui': '✅',
+                'ditolak': '❌'
+            };
+            return map[status] || '⏳';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr || dateStr === '-') return '-';
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr || dateStr === '-') return '-';
+            const d = new Date(dateStr);
+            return d.toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getFilteredData() {
+            let data = pengajuanData;
+
+            // Filter status
+            if (currentFilter !== 'all') {
+                if (currentFilter === 'menunggu') {
+                    data = data.filter(d => d.status === 'menunggu-tahap1' || d.status === 'menunggu-tahap2');
+                } else if (currentFilter === 'disetujui') {
+                    data = data.filter(d => d.status === 'disetujui');
+                } else if (currentFilter === 'ditolak') {
+                    data = data.filter(d => d.status === 'ditolak');
+                } else {
+                    // jenis filter (izin, cuti, kondisi)
+                    data = data.filter(d => d.jenis === currentFilter);
+                }
+            }
+
+            // Search
+            if (currentSearch.trim()) {
+                const search = currentSearch.toLowerCase().trim();
+                data = data.filter(d =>
+                    d.jenisLabel.toLowerCase().includes(search) ||
+                    d.alasan.toLowerCase().includes(search) ||
+                    d.statusLabel.toLowerCase().includes(search)
+                );
+            }
+
+            return data;
+        }
+
+        function renderTable() {
+            const filtered = getFilteredData();
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = filtered.slice(start, end);
+
+            const tbody = document.getElementById('tableBody');
+            if (pageData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-400">
+                            <span class="text-3xl block mb-2">📭</span>
+                            Tidak ada pengajuan yang ditemukan
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = pageData.map(d => `
+                    <tr class="table-row" onclick="openDetail(${d.id})">
+                        <td>
+                            <span class="jenis-icon">${d.icon}</span>
+                            ${d.jenisLabel}
+                        </td>
+                        <td>${formatDate(d.tanggalPengajuan)}</td>
+                        <td>${formatDate(d.tanggalMulai)} - ${formatDate(d.tanggalSelesai)}</td>
+                        <td>
+                            <span class="status-badge ${getStatusBadge(d.status)}">
+                                ${getStatusEmoji(d.status)} ${d.statusLabel}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="text-xs text-[#1e3a5f] font-medium hover:underline" onclick="event.stopPropagation(); openDetail(${d.id})">
+                                📋 Detail
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Update pagination info
+            document.getElementById('paginationInfo').textContent =
+                `Menampilkan ${totalItems > 0 ? start + 1 : 0}-${Math.min(end, totalItems)} dari ${totalItems} data`;
+            document.getElementById('pageIndicator').textContent = `${currentPage} / ${totalPages}`;
+
+            // Update button states
+            document.getElementById('prevPage').style.opacity = currentPage <= 1 ? '0.5' : '1';
+            document.getElementById('nextPage').style.opacity = currentPage >= totalPages ? '0.5' : '1';
+        }
+
+        // ===== FILTER & SEARCH =====
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                currentPage = 1;
+                renderTable();
+            });
+        });
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            currentSearch = this.value;
+            currentPage = 1;
+            renderTable();
+        });
+
+        // ===== PAGINATION =====
+        document.getElementById('prevPage').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', function() {
+            const filtered = getFilteredData();
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+
+        // ===== DETAIL MODAL =====
+        function openDetail(id) {
+            const data = pengajuanData.find(d => d.id === id);
+            if (!data) return;
+
+            document.getElementById('modalTitle').textContent = `${data.icon} ${data.jenisLabel}`;
+
+            // Detail
+            document.getElementById('modalDetail').innerHTML = `
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                        <p class="text-xs text-gray-400">Tanggal Pengajuan</p>
+                        <p class="font-medium text-[#0f1a2e]">${formatDate(data.tanggalPengajuan)}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400">Status</p>
+                        <span class="status-badge ${getStatusBadge(data.status)}">${getStatusEmoji(data.status)} ${data.statusLabel}</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400">Periode</p>
+                        <p class="font-medium text-[#0f1a2e]">${formatDate(data.tanggalMulai)} - ${formatDate(data.tanggalSelesai)}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400">Lampiran</p>
+                        <p class="font-medium text-[#0f1a2e]">${data.lampiran !== '-' ? '📎 ' + data.lampiran : '-'}</p>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400">Alasan</p>
+                    <p class="text-sm text-[#0f1a2e] bg-gray-50 p-2 rounded-lg border border-gray-100">${data.alasan}</p>
+                </div>
+            `;
+
+            // Timeline
+            let timelineHtml = '';
+            data.riwayat.forEach((r, index) => {
+                const isLast = index === data.riwayat.length - 1;
+                const dotClass = r.keputusan === 'Approve' ? 'approved' : r.keputusan === 'Reject' ? 'rejected' :
+                    'pending';
+                const statusText = r.keputusan === 'Approve' ? '✅ Disetujui' : r.keputusan === 'Reject' ? '❌ Ditolak' :
+                    '⏳ Menunggu';
+                const waktuText = r.waktu !== '-' ? formatDateTime(r.waktu) : 'Menunggu';
+
+                timelineHtml += `
+                    <div class="timeline-item ${isLast ? '' : ''}">
+                        <div class="dot ${dotClass}"></div>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-[#0f1a2e]">${r.tahap}</p>
+                                <p class="text-xs text-gray-500">${r.approver}</p>
+                                <p class="text-xs text-gray-400 mt-0.5">${statusText}</p>
+                                ${r.catatan && r.catatan !== '-' ? `<p class="text-xs text-gray-500 mt-1 italic">"${r.catatan}"</p>` : ''}
+                            </div>
+                            <span class="text-xs text-gray-400 shrink-0 ml-3">${waktuText}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('modalTimeline').innerHTML = timelineHtml;
+            document.getElementById('detailModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on overlay click
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Close modal on ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== INIT =====
+        renderTable();
+    </script>
+</body>
+</html>

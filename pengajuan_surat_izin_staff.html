@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pengajuan · Staf</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .sidebar {
+            background: #0f1a2e;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a2a44;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3b5a82;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            color: #94a9c9;
+            transition: all 0.2s;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #ffffff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .badge-notif {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #0f1a2e;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+        .form-label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.65rem 1rem;
+            border: 1px solid #e9edf4;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: #ffffff;
+            color: #0f1a2e;
+        }
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .form-hint {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.3rem;
+        }
+        .btn-primary {
+            background: #1e3a5f;
+            color: white;
+            padding: 0.65rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: #14304e;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px -8px rgba(30, 58, 95, 0.4);
+        }
+        .btn-secondary {
+            background: white;
+            color: #0f1a2e;
+            padding: 0.65rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+        .tab-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .tab-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .tab-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .status-badge {
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-kuota {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .upload-area {
+            border: 2px dashed #e9edf4;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-area:hover {
+            border-color: #1e3a5f;
+            background: #f8fafc;
+        }
+        .upload-area .icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 40;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        @media (max-width: 640px) {
+            .form-card {
+                padding: 1rem;
+            }
+            .tab-btn {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+            }
+            .btn-primary {
+                width: 100%;
+            }
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2a6 6 0 0 0-6 6v3a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6z" />
+                        <path d="M12 18v3" />
+                        <path d="M8 21h8" />
+                        <path d="M6 11a6 6 0 0 0 12 0" />
+                        <path d="M8 8a4 4 0 0 1 8 0" />
+                        <path d="M10 13a2 2 0 1 1 4 0" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-lg leading-none">Presensi SDM</p>
+                    <p class="text-[#94a9c9] text-xs">Sistem Terintegrasi</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📋</span> Rekap Presensi
+            </a>
+            <a href="#" class="nav-link active flex items-center">
+                <span class="icon">📝</span> Pengajuan
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📬</span> Status Pengajuan
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">🔔</span> Notifikasi
+                <span class="badge-notif">3</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <a href="#" class="nav-link flex items-center text-red-400 hover:text-red-300 hover:bg-red-950/30">
+                <span class="icon">🚪</span> Logout
+            </a>
+            <div class="mt-3 flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                <div>
+                    <p class="text-white text-sm font-medium">Dr. Siti Rahayu</p>
+                    <p class="text-[#94a9c9] text-xs">Dosen · Teknik Informatika</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-6">
+
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1a2e]">📝 Pengajuan</h1>
+                    <p class="text-sm text-gray-500">Ajukan izin, cuti, atau laporan kondisi khusus</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <button class="p-2 rounded-full bg-white shadow-sm border border-gray-200 relative">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[0.55rem] font-bold rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">Dr. Siti Rahayu</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === TABS === -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button class="tab-btn active" data-tab="izin">📝 Surat Izin</button>
+            <button class="tab-btn" data-tab="cuti">🏖️ Cuti</button>
+            <button class="tab-btn" data-tab="kondisi">⚠️ Kondisi Khusus</button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 1: SURAT IZIN -->
+        <!-- ============================================================ -->
+        <div id="tab-izin" class="tab-content active">
+            <div class="form-card max-w-2xl">
+                <div class="flex items-center gap-3 mb-5">
+                    <span class="text-2xl">📝</span>
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#0f1a2e]">Form Pengajuan Surat Izin</h3>
+                        <p class="text-sm text-gray-500">Ajukan izin terlambat, tidak masuk, dinas luar, atau kegiatan institusi</p>
+                    </div>
+                </div>
+
+                <form id="formIzin" class="space-y-4">
+                    <!-- Jenis Izin -->
+                    <div>
+                        <label class="form-label">Jenis Izin <span class="required">*</span></label>
+                        <select class="form-select" required>
+                            <option value="">Pilih jenis izin</option>
+                            <option value="terlambat">⏰ Izin Terlambat</option>
+                            <option value="tidak_masuk">🚫 Izin Tidak Masuk</option>
+                            <option value="dinas_luar">🏢 Izin Dinas Luar</option>
+                            <option value="kegiatan_institusi">🎓 Izin Kegiatan Institusi</option>
+                        </select>
+                    </div>
+
+                    <!-- Tanggal Mulai & Selesai -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Tanggal Mulai <span class="required">*</span></label>
+                            <input type="date" class="form-input" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Tanggal Selesai <span class="required">*</span></label>
+                            <input type="date" class="form-input" required />
+                        </div>
+                    </div>
+
+                    <!-- Alasan -->
+                    <div>
+                        <label class="form-label">Alasan Izin <span class="required">*</span></label>
+                        <textarea class="form-textarea" placeholder="Jelaskan alasan pengajuan izin..." required></textarea>
+                        <p class="form-hint">Minimal 10 karakter</p>
+                    </div>
+
+                    <!-- Upload Lampiran -->
+                    <div>
+                        <label class="form-label">Lampiran Pendukung <span class="text-gray-400 text-sm font-normal">(opsional)</span></label>
+                        <div class="upload-area" onclick="document.getElementById('fileIzin').click()">
+                            <span class="icon">📎</span>
+                            <p class="text-sm font-medium text-[#0f1a2e]">Klik untuk upload file</p>
+                            <p class="text-xs text-gray-400">PDF, JPG, PNG (maks 2MB)</p>
+                            <input type="file" id="fileIzin" class="hidden" accept=".pdf,.jpg,.png" />
+                        </div>
+                        <p class="form-hint" id="fileIzinName">Belum ada file dipilih</p>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button type="submit" class="btn-primary">📨 Kirim Pengajuan</button>
+                        <button type="reset" class="btn-secondary">🗑️ Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: CUTI -->
+        <!-- ============================================================ -->
+        <div id="tab-cuti" class="tab-content">
+            <div class="form-card max-w-2xl">
+                <div class="flex items-center gap-3 mb-5">
+                    <span class="text-2xl">🏖️</span>
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#0f1a2e]">Form Pengajuan Cuti</h3>
+                        <p class="text-sm text-gray-500">Ajukan cuti tahunan, sakit, melahirkan, atau khusus</p>
+                    </div>
+                </div>
+
+                <!-- Kuota Cuti -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-800">🏖️ Sisa Kuota Cuti Tahunan</p>
+                        <p class="text-xs text-blue-600">Periode: 2026</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-2xl font-bold text-blue-800">9</span>
+                        <span class="text-sm text-blue-600">/ 12 hari</span>
+                        <div class="w-32 h-1.5 bg-blue-200 rounded-full mt-1">
+                            <div class="h-1.5 bg-blue-600 rounded-full" style="width:75%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="formCuti" class="space-y-4">
+                    <!-- Jenis Cuti -->
+                    <div>
+                        <label class="form-label">Jenis Cuti <span class="required">*</span></label>
+                        <select class="form-select" required>
+                            <option value="">Pilih jenis cuti</option>
+                            <option value="tahunan">🏖️ Cuti Tahunan</option>
+                            <option value="sakit">🏥 Cuti Sakit</option>
+                            <option value="melahirkan">👶 Cuti Melahirkan</option>
+                            <option value="khusus">📌 Cuti Khusus</option>
+                        </select>
+                    </div>
+
+                    <!-- Tanggal Mulai & Selesai + Jumlah Hari -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="form-label">Tanggal Mulai <span class="required">*</span></label>
+                            <input type="date" class="form-input" required id="cutiMulai" />
+                        </div>
+                        <div>
+                            <label class="form-label">Tanggal Selesai <span class="required">*</span></label>
+                            <input type="date" class="form-input" required id="cutiSelesai" />
+                        </div>
+                        <div>
+                            <label class="form-label">Jumlah Hari</label>
+                            <input type="text" class="form-input bg-gray-50" value="3 hari" readonly />
+                            <p class="form-hint">Otomatis terhitung</p>
+                        </div>
+                    </div>
+
+                    <!-- Alasan -->
+                    <div>
+                        <label class="form-label">Alasan Cuti</label>
+                        <textarea class="form-textarea" placeholder="Jelaskan alasan pengajuan cuti (opsional)"></textarea>
+                    </div>
+
+                    <!-- Upload Lampiran (wajib untuk sakit/melahirkan) -->
+                    <div>
+                        <label class="form-label">
+                            Lampiran Pendukung
+                            <span class="text-red-500 text-sm font-normal">*wajib untuk cuti sakit &amp; melahirkan</span>
+                        </label>
+                        <div class="upload-area" onclick="document.getElementById('fileCuti').click()">
+                            <span class="icon">📎</span>
+                            <p class="text-sm font-medium text-[#0f1a2e]">Klik untuk upload file</p>
+                            <p class="text-xs text-gray-400">PDF, JPG, PNG (maks 2MB)</p>
+                            <input type="file" id="fileCuti" class="hidden" accept=".pdf,.jpg,.png" />
+                        </div>
+                        <p class="form-hint" id="fileCutiName">Belum ada file dipilih</p>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button type="submit" class="btn-primary">📨 Kirim Pengajuan</button>
+                        <button type="reset" class="btn-secondary">🗑️ Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 3: KONDISI KHUSUS -->
+        <!-- ============================================================ -->
+        <div id="tab-kondisi" class="tab-content">
+            <div class="form-card max-w-2xl">
+                <div class="flex items-center gap-3 mb-5">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                        <h3 class="text-lg font-semibold text-[#0f1a2e]">Form Pengajuan Kondisi Khusus</h3>
+                        <p class="text-sm text-gray-500">Laporkan kondisi yang menyebabkan tidak dapat melakukan fingerprint</p>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-5">
+                    <p class="text-xs text-yellow-800 flex items-center gap-2">
+                        <span class="text-lg">ℹ️</span>
+                        Pengajuan ini adalah <strong>laporan kondisi khusus</strong>, bukan presensi online. 
+                        Admin akan menginput presensi manual setelah pengajuan disetujui.
+                    </p>
+                </div>
+
+                <form id="formKondisi" class="space-y-4">
+                    <!-- Tanggal Kejadian -->
+                    <div>
+                        <label class="form-label">Tanggal Kejadian <span class="required">*</span></label>
+                        <input type="date" class="form-input" required />
+                        <p class="form-hint">Tanggal saat Anda tidak dapat melakukan fingerprint</p>
+                    </div>
+
+                    <!-- Kategori -->
+                    <div>
+                        <label class="form-label">Kategori <span class="required">*</span></label>
+                        <select class="form-select" required>
+                            <option value="">Pilih kategori</option>
+                            <option value="dinas_luar">🏢 Dinas Luar</option>
+                            <option value="kegiatan_kampus">🎓 Kegiatan Kampus</option>
+                            <option value="penugasan_lapangan">🌍 Penugasan Lapangan</option>
+                            <option value="lupa_fingerprint">🖐️ Lupa Fingerprint</option>
+                            <option value="mesin_bermasalah">🔧 Mesin Fingerprint Bermasalah</option>
+                        </select>
+                    </div>
+
+                    <!-- Alasan -->
+                    <div>
+                        <label class="form-label">Alasan / Keterangan <span class="required">*</span></label>
+                        <textarea class="form-textarea" placeholder="Jelaskan secara detail kondisi yang terjadi..." required></textarea>
+                        <p class="form-hint">Minimal 10 karakter</p>
+                    </div>
+
+                    <!-- Upload Lampiran -->
+                    <div>
+                        <label class="form-label">Lampiran Pendukung <span class="text-gray-400 text-sm font-normal">(opsional)</span></label>
+                        <div class="upload-area" onclick="document.getElementById('fileKondisi').click()">
+                            <span class="icon">📎</span>
+                            <p class="text-sm font-medium text-[#0f1a2e]">Klik untuk upload file</p>
+                            <p class="text-xs text-gray-400">PDF, JPG, PNG (maks 2MB) — misal surat tugas</p>
+                            <input type="file" id="fileKondisi" class="hidden" accept=".pdf,.jpg,.png" />
+                        </div>
+                        <p class="form-hint" id="fileKondisiName">Belum ada file dipilih</p>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button type="submit" class="btn-primary">📨 Kirim Laporan</button>
+                        <button type="reset" class="btn-secondary">🗑️ Reset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-[0.6rem] text-gray-400 border-t border-gray-200 pt-4">
+            <span>SRS · Sistem Manajemen Presensi SDM Kampus</span>
+            <span class="mx-1.5">•</span>
+            <span>v1.0</span>
+            <span class="mx-1.5">•</span>
+            <span>Halaman Pengajuan</span>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        // Close sidebar on outside click (mobile)
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== TABS =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-' + tabId).classList.add('active');
+            });
+        });
+
+        // ===== FILE UPLOAD =====
+        function setupFileUpload(inputId, labelId) {
+            const input = document.getElementById(inputId);
+            const label = document.getElementById(labelId);
+            if (input && label) {
+                input.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        label.textContent = '📎 ' + this.files[0].name;
+                        label.style.color = '#15803d';
+                    } else {
+                        label.textContent = 'Belum ada file dipilih';
+                        label.style.color = '#94a3b8';
+                    }
+                });
+            }
+        }
+
+        setupFileUpload('fileIzin', 'fileIzinName');
+        setupFileUpload('fileCuti', 'fileCutiName');
+        setupFileUpload('fileKondisi', 'fileKondisiName');
+
+        // ===== FORM SUBMIT (Simulasi) =====
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Validasi sederhana
+                const required = this.querySelectorAll('[required]');
+                let valid = true;
+                required.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.style.borderColor = '#ef4444';
+                        field.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+                        valid = false;
+                    } else {
+                        field.style.borderColor = '#e9edf4';
+                        field.style.boxShadow = 'none';
+                    }
+                });
+
+                if (!valid) {
+                    alert('⚠️ Harap isi semua field yang wajib (ditandai *)');
+                    return;
+                }
+
+                // Simulasi submit
+                const btn = this.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '⏳ Memproses...';
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    alert('✅ Pengajuan berhasil dikirim!\n\nStatus: Menunggu Persetujuan Tahap 1');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    this.reset();
+
+                    // Reset file labels
+                    document.querySelectorAll('[id$="Name"]').forEach(el => {
+                        el.textContent = 'Belum ada file dipilih';
+                        el.style.color = '#94a3b8';
+                    });
+                }, 1500);
+            });
+        });
+
+        // ===== RESET FORM =====
+        document.querySelectorAll('form button[type="reset"]').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = this.closest('form');
+                if (confirm('Yakin ingin mereset semua data yang sudah diisi?')) {
+                    form.reset();
+                    form.querySelectorAll('[required]').forEach(field => {
+                        field.style.borderColor = '#e9edf4';
+                        field.style.boxShadow = 'none';
+                    });
+                    document.querySelectorAll('[id$="Name"]').forEach(el => {
+                        el.textContent = 'Belum ada file dipilih';
+                        el.style.color = '#94a3b8';
+                    });
+                }
+            });
+        });
+
+        // ===== AUTO CALCULATE CUTI DAYS =====
+        function calculateDays() {
+            const mulai = document.getElementById('cutiMulai');
+            const selesai = document.getElementById('cutiSelesai');
+            if (mulai.value && selesai.value) {
+                const start = new Date(mulai.value);
+                const end = new Date(selesai.value);
+                if (end >= start) {
+                    const diffTime = Math.abs(end - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                    const input = selesai.closest('.grid').querySelector('input[readonly]');
+                    if (input) {
+                        input.value = diffDays + ' hari';
+                    }
+                }
+            }
+        }
+
+        document.getElementById('cutiMulai')?.addEventListener('change', calculateDays);
+        document.getElementById('cutiSelesai')?.addEventListener('change', calculateDays);
+    </script>
+</body>
+</html>
