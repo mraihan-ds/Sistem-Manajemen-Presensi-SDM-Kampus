@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manajemen Pengguna - Sistem Manajemen Presensi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            background: #0f1a2e;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        #sidebar.hidden-sidebar {
+            transform: translateX(-100%);
+        }
+
+        #sidebar .logo-area {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #sidebar .logo-area h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        #sidebar .logo-area span {
+            color: #94a9c9;
+            font-size: 0.7rem;
+            font-weight: 400;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1rem;
+            margin: 0.2rem 0.75rem;
+            border-radius: 10px;
+            color: #94a9c9;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            gap: 12px;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #fff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #fff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        .nav-link .badge-notif {
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.6rem;
+            border-radius: 999px;
+            padding: 0.1rem 0.6rem;
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        .sidebar-user {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: auto;
+            position: sticky;
+            bottom: 0;
+            background: #0f1a2e;
+        }
+        .sidebar-user .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .sidebar-user .info .name {
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .sidebar-user .info .role {
+            color: #94a9c9;
+            font-size: 0.7rem;
+        }
+
+        /* ===== OVERLAY ===== */
+        #sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 40;
+            display: none;
+        }
+        #sidebar-overlay.show {
+            display: block;
+        }
+
+        /* ===== MAIN ===== */
+        #main-content {
+            margin-left: 260px;
+            padding: 1.5rem;
+            min-height: 100vh;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0 1.5rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .top-bar .page-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f1a2e;
+        }
+        .top-bar .page-title p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .top-bar-actions .notif-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+        .top-bar-actions .notif-bell .badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.55rem;
+            border-radius: 999px;
+            padding: 0.1rem 0.5rem;
+            font-weight: 700;
+        }
+        .top-bar-actions .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #0f1a2e;
+            background: none;
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .card-header h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #0f1a2e;
+        }
+
+        /* ===== BUTTON ===== */
+        .btn-primary {
+            background: #1e3a5f;
+            color: #fff;
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary:hover {
+            background: #14304e;
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            border: 1px solid #e9edf4;
+            color: #0f1a2e;
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-outline {
+            border: 1px solid #1e3a5f;
+            color: #1e3a5f;
+            background: transparent;
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            background: #1e3a5f;
+            color: #fff;
+        }
+
+        .btn-danger-outline {
+            border: 1px solid #b91c1c;
+            color: #b91c1c;
+            background: transparent;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-danger-outline:hover {
+            background: #b91c1c;
+            color: #fff;
+        }
+
+        .btn-success-outline {
+            border: 1px solid #15803d;
+            color: #15803d;
+            background: transparent;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-success-outline:hover {
+            background: #15803d;
+            color: #fff;
+        }
+
+        /* ===== FORM INPUT ===== */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.6rem 0.9rem;
+            border: 1px solid #e9edf4;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            background: #fff;
+            transition: all 0.2s;
+            color: #0f1a2e;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
+        }
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+        select.form-control {
+            appearance: auto;
+        }
+
+        /* ===== STATUS BADGE ===== */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            gap: 4px;
+        }
+        .badge-status.active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-status.active .dot {
+            background: #15803d;
+        }
+        .badge-status.inactive {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-status.inactive .dot {
+            background: #b91c1c;
+        }
+        .badge-status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        .badge-role {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .badge-role.admin {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .badge-role.dosen {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-role.staf {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .badge-role.kaprodi {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+        .badge-role.osdm {
+            background: #fce7f3;
+            color: #be185d;
+        }
+        .badge-role.direktur {
+            background: #cffafe;
+            color: #0891b2;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        .table-wrap table {
+            width: 100%;
+            font-size: 0.85rem;
+        }
+        .table-wrap table thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e9edf4;
+            white-space: nowrap;
+        }
+        .table-wrap table tbody td {
+            padding: 0.65rem 0.75rem;
+            border-bottom: 1px solid #e9edf4;
+            color: #0f1a2e;
+            vertical-align: middle;
+        }
+        .table-wrap table tbody tr:hover {
+            background: #f8fafc;
+        }
+        .table-wrap table tbody .actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+        .table-wrap table tbody .actions button {
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .table-wrap table tbody .actions button:hover {
+            background: #e2e8f0;
+        }
+        .table-wrap table tbody .actions .edit-btn:hover {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .table-wrap table tbody .actions .reset-btn:hover {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .table-wrap table tbody .actions .toggle-btn:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* ===== FILTER ===== */
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+        .filter-group .form-group {
+            margin-bottom: 0;
+            min-width: 140px;
+        }
+        .filter-group .form-group label {
+            font-size: 0.7rem;
+            margin-bottom: 0.1rem;
+        }
+        .filter-group .form-control {
+            padding: 0.4rem 0.7rem;
+            font-size: 0.8rem;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 560px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-box .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-box .modal-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0f1a2e;
+        }
+        .modal-box .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 0 0.25rem;
+        }
+        .modal-box .modal-close:hover {
+            color: #0f1a2e;
+        }
+
+        /* ===== ROLE SECTION ===== */
+        .role-card {
+            border: 1px solid #e9edf4;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            transition: all 0.2s;
+        }
+        .role-card:hover {
+            background: #f8fafc;
+        }
+        .role-card .role-name {
+            font-weight: 600;
+            color: #0f1a2e;
+            font-size: 0.95rem;
+        }
+        .role-card .role-count {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        .role-card .permission-list {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+        .role-card .permission-list .perm-item {
+            background: #f1f5f9;
+            padding: 0.15rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            color: #64748b;
+            border: 1px solid #e9edf4;
+        }
+
+        /* ===== TAB ===== */
+        .tab-container {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid #e9edf4;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 0.5rem 1.25rem;
+            border: none;
+            background: transparent;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            color: #1e3a5f;
+            border-bottom-color: #1e3a5f;
+        }
+        .tab-btn:hover {
+            color: #0f1a2e;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            #main-content {
+                margin-left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+            #sidebar-overlay.show {
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #main-content {
+                padding: 1rem;
+            }
+            .top-bar .page-title h2 {
+                font-size: 1.2rem;
+            }
+            .filter-group .form-group {
+                min-width: 100%;
+            }
+            .modal-box {
+                padding: 1.25rem;
+                margin: 0.5rem;
+            }
+            .table-wrap table {
+                font-size: 0.75rem;
+            }
+            .table-wrap table thead th,
+            .table-wrap table tbody td {
+                padding: 0.4rem 0.5rem;
+            }
+            .table-wrap table tbody .actions button {
+                font-size: 0.6rem;
+                padding: 0.15rem 0.4rem;
+            }
+        }
+
+        /* Scrollbar */
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: #0f1a2e;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #1e3a5f;
+            border-radius: 4px;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+        }
+        .gap-1 {
+            gap: 0.25rem;
+        }
+        .gap-2 {
+            gap: 0.5rem;
+        }
+        .gap-3 {
+            gap: 0.75rem;
+        }
+        .gap-4 {
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR OVERLAY ===== -->
+    <div id="sidebar-overlay"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar">
+        <div class="logo-area">
+            <h1>📋 Presensi</h1>
+            <span>Sistem Manajemen SDM Kampus</span>
+        </div>
+
+        <nav style="padding: 0.75rem 0 0 0;">
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a class="nav-link active" onclick="closeSidebar()">
+                <span class="icon">👥</span> Manajemen Pengguna
+                <span class="badge-notif">12</span>
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">🔄</span> Sinkronisasi
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📝</span> Kondisi Khusus
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📄</span> Laporan
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">🔍</span> Audit Trail
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">⚙️</span> Parameter
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="avatar">AS</div>
+            <div class="info">
+                <div class="name">Admin Sistem</div>
+                <div class="role">Administrator</div>
+            </div>
+            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="flex-center gap-3">
+                <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">☰</button>
+                <div class="page-title">
+                    <h2>Manajemen Pengguna</h2>
+                    <p>Kelola data pengguna, role, dan hak akses sistem</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div class="notif-bell" title="Notifikasi">
+                    🔔
+                    <span class="badge">6</span>
+                </div>
+                <div class="user-avatar" title="Admin Sistem">AS</div>
+            </div>
+        </div>
+
+        <!-- ===== TABS ===== -->
+        <div class="card" style="padding-bottom:0.5rem;">
+            <div class="tab-container">
+                <button class="tab-btn active" data-tab="tab-users">👥 Data Pengguna</button>
+                <button class="tab-btn" data-tab="tab-roles">🛡️ Role & Hak Akses</button>
+            </div>
+        </div>
+
+        <!-- ===== TAB 1: DATA PENGGUNA ===== -->
+        <div id="tab-users" class="tab-content active" style="margin-top:1.5rem;">
+
+            <!-- FILTER & TAMBAH -->
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between; align-items:flex-end;">
+                    <div class="filter-group">
+                        <div class="form-group">
+                            <label>🔍 Cari</label>
+                            <input type="text" class="form-control" placeholder="Nama, username, email..." style="min-width:180px;" id="searchUser">
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select class="form-control" id="filterRole">
+                                <option value="">Semua Role</option>
+                                <option value="admin">Admin</option>
+                                <option value="dosen">Dosen</option>
+                                <option value="staf">Staf</option>
+                                <option value="kaprodi">Kaprodi</option>
+                                <option value="atasan">Atasan Langsung</option>
+                                <option value="osdm">OSDM</option>
+                                <option value="direktur">Direktur</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Unit Kerja</label>
+                            <select class="form-control" id="filterUnit">
+                                <option value="">Semua Unit</option>
+                                <option value="ti">Teknik Informatika</option>
+                                <option value="si">Sistem Informasi</option>
+                                <option value="ak">Akuntansi</option>
+                                <option value="mn">Manajemen</option>
+                                <option value="rektorat">Rektorat</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control" id="filterStatus">
+                                <option value="">Semua</option>
+                                <option value="aktif">Aktif</option>
+                                <option value="nonaktif">Nonaktif</option>
+                            </select>
+                        </div>
+                        <button class="btn-secondary" style="padding:0.4rem 1rem; font-size:0.8rem;" onclick="applyFilters()">🔍 Filter</button>
+                        <button class="btn-secondary" style="padding:0.4rem 1rem; font-size:0.8rem;" onclick="resetFilters()">↺ Reset</button>
+                    </div>
+                    <button class="btn-primary" onclick="openModal('tambah')">➕ Tambah Pengguna</button>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📋 Daftar Pengguna</h3>
+                    <span style="font-size:0.85rem; color:#64748b;">Total: <strong id="totalUsers">18</strong> pengguna</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nama</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Unit Kerja</th>
+                                <th>Status</th>
+                                <th style="min-width:160px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- Data via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                    <span style="font-size:0.8rem; color:#94a3b8;">Menampilkan 1-10 dari 18 data</span>
+                    <div style="display:flex; gap:0.3rem;">
+                        <button class="btn-secondary" style="padding:0.3rem 0.8rem; font-size:0.75rem;">«</button>
+                        <button class="btn-primary" style="padding:0.3rem 0.8rem; font-size:0.75rem;">1</button>
+                        <button class="btn-secondary" style="padding:0.3rem 0.8rem; font-size:0.75rem;">2</button>
+                        <button class="btn-secondary" style="padding:0.3rem 0.8rem; font-size:0.75rem;">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB 2: ROLE & HAK AKSES ===== -->
+        <div id="tab-roles" class="tab-content" style="margin-top:1.5rem;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🛡️ Role & Hak Akses</h3>
+                    <span style="font-size:0.85rem; color:#64748b;">Sesuai SRS, hak akses bersifat <strong>read-only</strong> untuk dilihat</span>
+                </div>
+                <div style="font-size:0.85rem; color:#64748b; margin-bottom:1rem; background:#f8fafc; padding:0.75rem 1rem; border-radius:12px;">
+                    ℹ️ Hak akses ditentukan berdasarkan role pengguna sesuai kebutuhan bisnis. Konfigurasi role tidak dapat diubah melalui antarmuka ini.
+                </div>
+                <div id="roleListContainer" style="display:grid; grid-template-columns:1fr; gap:0.75rem;">
+                    <!-- Role cards via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid #e9edf4; text-align:center; color:#94a3b8; font-size:0.75rem;">
+            Sistem Manajemen Presensi SDM Kampus v2.0 &bull; 2026 &bull; Administrator Sistem
+        </div>
+
+    </main>
+
+    <!-- ===== MODAL TAMBAH/EDIT ===== -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTitle">Tambah Pengguna</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <form id="userForm" onsubmit="saveUser(event)">
+                <input type="hidden" id="editUserId" value="">
+
+                <div class="form-group">
+                    <label>Nama Lengkap *</label>
+                    <input type="text" class="form-control" id="formNama" placeholder="Nama lengkap" required>
+                </div>
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" class="form-control" id="formUsername" placeholder="Username unik" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" class="form-control" id="formEmail" placeholder="email@kampus.ac.id" required>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" class="form-control" id="formPassword" placeholder="Minimal 8 karakter" required>
+                </div>
+                <div class="form-group">
+                    <label>Role *</label>
+                    <select class="form-control" id="formRole" required>
+                        <option value="">Pilih Role</option>
+                        <option value="admin">Administrator Sistem</option>
+                        <option value="dosen">Dosen</option>
+                        <option value="staf">Staf</option>
+                        <option value="kaprodi">Kaprodi</option>
+                        <option value="atasan">Atasan Langsung</option>
+                        <option value="osdm">OSDM</option>
+                        <option value="direktur">Direktur</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Unit Kerja *</label>
+                    <select class="form-control" id="formUnit" required>
+                        <option value="">Pilih Unit Kerja</option>
+                        <option value="ti">Teknik Informatika</option>
+                        <option value="si">Sistem Informasi</option>
+                        <option value="ak">Akuntansi</option>
+                        <option value="mn">Manajemen</option>
+                        <option value="rektorat">Rektorat</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status Akun</label>
+                    <select class="form-control" id="formStatus">
+                        <option value="aktif">Aktif</option>
+                        <option value="nonaktif">Nonaktif</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:0.75rem; margin-top:1rem; justify-content:flex-end;">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Batal</button>
+                    <button type="submit" class="btn-primary" id="modalSubmitBtn">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MODAL RESET PASSWORD ===== -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal-box" style="max-width:400px;">
+            <div class="modal-header">
+                <h3>🔑 Reset Password</h3>
+                <button class="modal-close" onclick="closeResetModal()">✕</button>
+            </div>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.25rem;">
+                Anda akan mereset password untuk pengguna: <strong id="resetUserName">-</strong>
+            </p>
+            <p style="color:#b91c1c; font-size:0.85rem; background:#fee2e2; padding:0.5rem 0.75rem; border-radius:8px; margin-bottom:1.25rem;">
+                ⚠️ Password akan direset menjadi: <strong id="resetNewPassword">Admin12345</strong>
+            </p>
+            <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+                <button class="btn-secondary" onclick="closeResetModal()">Batal</button>
+                <button class="btn-primary" style="background:#b91c1c;" onclick="confirmReset()">Reset Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ===== DATA DUMMY =====
+        let users = [{
+            id: 1,
+            nama: 'Dr. Siti Rahayu, M.Kom.',
+            username: 'siti.rahayu',
+            email: 'siti.rahayu@kampus.ac.id',
+            role: 'dosen',
+            roleLabel: 'Dosen',
+            unit: 'ti',
+            unitLabel: 'Teknik Informatika',
+            status: 'aktif'
+        }, {
+            id: 2,
+            nama: 'Muhammad Fadli, S.Si.',
+            username: 'mfadli',
+            email: 'mfadli@kampus.ac.id',
+            role: 'staf',
+            roleLabel: 'Staf',
+            unit: 'si',
+            unitLabel: 'Sistem Informasi',
+            status: 'aktif'
+        }, {
+            id: 3,
+            nama: 'Dr. Ahmad Fauzi, M.T.',
+            username: 'ahmad.fauzi',
+            email: 'ahmad.fauzi@kampus.ac.id',
+            role: 'kaprodi',
+            roleLabel: 'Kaprodi',
+            unit: 'ti',
+            unitLabel: 'Teknik Informatika',
+            status: 'aktif'
+        }, {
+            id: 4,
+            nama: 'Rina Dewi, S.E., M.M.',
+            username: 'rina.dewi',
+            email: 'rina.dewi@kampus.ac.id',
+            role: 'atasan',
+            roleLabel: 'Atasan Langsung',
+            unit: 'mn',
+            unitLabel: 'Manajemen',
+            status: 'aktif'
+        }, {
+            id: 5,
+            nama: 'Drs. Haryanto, M.Pd.',
+            username: 'haryanto',
+            email: 'haryanto@kampus.ac.id',
+            role: 'osdm',
+            roleLabel: 'OSDM',
+            unit: 'rektorat',
+            unitLabel: 'Rektorat',
+            status: 'aktif'
+        }, {
+            id: 6,
+            nama: 'Prof. Dr. Budi Santoso',
+            username: 'budi.santoso',
+            email: 'budi.santoso@kampus.ac.id',
+            role: 'direktur',
+            roleLabel: 'Direktur',
+            unit: 'rektorat',
+            unitLabel: 'Rektorat',
+            status: 'aktif'
+        }, {
+            id: 7,
+            nama: 'Admin Sistem',
+            username: 'admin',
+            email: 'admin@kampus.ac.id',
+            role: 'admin',
+            roleLabel: 'Administrator Sistem',
+            unit: 'rektorat',
+            unitLabel: 'Rektorat',
+            status: 'aktif'
+        }, {
+            id: 8,
+            nama: 'Siti Nurhaliza, M.Kom.',
+            username: 'siti.nurhaliza',
+            email: 'siti.nurhaliza@kampus.ac.id',
+            role: 'dosen',
+            roleLabel: 'Dosen',
+            unit: 'si',
+            unitLabel: 'Sistem Informasi',
+            status: 'aktif'
+        }, {
+            id: 9,
+            nama: 'Rahmat Hidayat, S.Kom.',
+            username: 'rahmat.h',
+            email: 'rahmat.h@kampus.ac.id',
+            role: 'staf',
+            roleLabel: 'Staf',
+            unit: 'ti',
+            unitLabel: 'Teknik Informatika',
+            status: 'nonaktif'
+        }, {
+            id: 10,
+            nama: 'Drs. Agus Salim, M.A.',
+            username: 'agus.salim',
+            email: 'agus.salim@kampus.ac.id',
+            role: 'kaprodi',
+            roleLabel: 'Kaprodi',
+            unit: 'ak',
+            unitLabel: 'Akuntansi',
+            status: 'aktif'
+        }];
+
+        let nextId = 11;
+
+        // ===== ROLE DATA =====
+        const roleData = [{
+            role: 'Administrator Sistem',
+            icon: '🛠️',
+            count: 1,
+            permissions: [
+                'Kelola semua data pengguna',
+                'Kelola sinkronisasi fingerprint',
+                'Input presensi manual',
+                'Konfigurasi workflow approval',
+                'Kelola parameter sistem',
+                'Akses audit trail',
+                'Kelola laporan semua unit'
+            ]
+        }, {
+            role: 'Direktur',
+            icon: '👔',
+            count: 1,
+            permissions: [
+                'Dashboard ringkasan strategis',
+                'Statistik kehadiran institusi',
+                'Statistik disiplin pegawai',
+                'Laporan efisiensi kerja',
+                'Tren kehadiran bulanan',
+                'Ringkasan SDM'
+            ]
+        }, {
+            role: 'OSDM',
+            icon: '📊',
+            count: 1,
+            permissions: [
+                'Monitoring kedisiplinan real-time',
+                'Dashboard OSDM',
+                'Approval tahap akhir (izin/cuti/kondisi khusus)',
+                'Laporan efisiensi kerja',
+                'Statistik per unit kerja',
+                'Pembinaan/peringatan pegawai'
+            ]
+        }, {
+            role: 'Kaprodi',
+            icon: '🎓',
+            count: 2,
+            permissions: [
+                'Approval tahap 1 (izin/cuti/kondisi khusus Dosen)',
+                'Lihat rekap kehadiran Dosen di prodi',
+                'Notifikasi pengajuan'
+            ]
+        }, {
+            role: 'Atasan Langsung',
+            icon: '👤',
+            count: 1,
+            permissions: [
+                'Approval tahap 1 (izin/cuti/kondisi khusus Staf)',
+                'Lihat rekap kehadiran Staf di unit',
+                'Notifikasi pengajuan'
+            ]
+        }, {
+            role: 'Dosen',
+            icon: '🧑‍🏫',
+            count: 4,
+            permissions: [
+                'Lihat rekap presensi pribadi',
+                'Ajukan izin (terlambat, tidak masuk, dinas luar, kegiatan institusi)',
+                'Ajukan cuti (tahunan, sakit, melahirkan, khusus)',
+                'Ajukan kondisi khusus',
+                'Terima notifikasi'
+            ]
+        }, {
+            role: 'Staf',
+            icon: '🧑‍💼',
+            count: 3,
+            permissions: [
+                'Lihat rekap presensi pribadi',
+                'Ajukan izin (terlambat, tidak masuk, dinas luar, kegiatan institusi)',
+                'Ajukan cuti (tahunan, sakit, melahirkan, khusus)',
+                'Ajukan kondisi khusus',
+                'Terima notifikasi'
+            ]
+        }];
+
+        // ===== RENDER TABLE =====
+        function renderUsers(data) {
+            const tbody = document.getElementById('userTableBody');
+            const list = data || users;
+            if (list.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="8" style="text-align:center;padding:2rem;color:#94a3b8;">Tidak ada data pengguna</td></tr>`;
+                document.getElementById('totalUsers').textContent = '0';
+                return;
+            }
+            tbody.innerHTML = list.map((u, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${u.nama}</strong></td>
+                    <td>${u.username}</td>
+                    <td>${u.email}</td>
+                    <td><span class="badge-role ${u.role}">${u.roleLabel}</span></td>
+                    <td>${u.unitLabel}</td>
+                    <td>
+                        <span class="badge-status ${u.status === 'aktif' ? 'active' : 'inactive'}">
+                            <span class="dot"></span> ${u.status === 'aktif' ? 'Aktif' : 'Nonaktif'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <button class="edit-btn" onclick="editUser(${u.id})" title="Edit">✏️ Edit</button>
+                            <button class="reset-btn" onclick="openResetModal(${u.id})" title="Reset Password">🔑 Reset</button>
+                            <button class="toggle-btn" onclick="toggleUser(${u.id})" title="${u.status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan'}">
+                                ${u.status === 'aktif' ? '🔴 Nonaktif' : '🟢 Aktif'}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            document.getElementById('totalUsers').textContent = list.length;
+        }
+
+        // ===== FILTERS =====
+        function applyFilters() {
+            const search = document.getElementById('searchUser').value.toLowerCase();
+            const role = document.getElementById('filterRole').value;
+            const unit = document.getElementById('filterUnit').value;
+            const status = document.getElementById('filterStatus').value;
+
+            const filtered = users.filter(u => {
+                const matchSearch = u.nama.toLowerCase().includes(search) ||
+                    u.username.toLowerCase().includes(search) ||
+                    u.email.toLowerCase().includes(search);
+                const matchRole = !role || u.role === role;
+                const matchUnit = !unit || u.unit === unit;
+                const matchStatus = !status || u.status === status;
+                return matchSearch && matchRole && matchUnit && matchStatus;
+            });
+            renderUsers(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchUser').value = '';
+            document.getElementById('filterRole').value = '';
+            document.getElementById('filterUnit').value = '';
+            document.getElementById('filterStatus').value = '';
+            renderUsers(users);
+        }
+
+        // ===== SIDEBAR =====
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const hamburger = document.getElementById('hamburgerBtn');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        window.closeSidebar = function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        };
+
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { closeSidebar();
+                closeModal();
+                closeResetModal(); }
+        });
+
+        // ===== TABS =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ===== MODAL =====
+        function openModal(type, userId) {
+            document.getElementById('userModal').classList.add('show');
+            if (type === 'tambah') {
+                document.getElementById('modalTitle').textContent = 'Tambah Pengguna';
+                document.getElementById('modalSubmitBtn').textContent = 'Tambah';
+                document.getElementById('userForm').reset();
+                document.getElementById('editUserId').value = '';
+                document.getElementById('formPassword').required = true;
+            } else if (type === 'edit') {
+                const user = users.find(u => u.id === userId);
+                if (!user) return;
+                document.getElementById('modalTitle').textContent = 'Edit Pengguna';
+                document.getElementById('modalSubmitBtn').textContent = 'Update';
+                document.getElementById('editUserId').value = userId;
+                document.getElementById('formNama').value = user.nama;
+                document.getElementById('formUsername').value = user.username;
+                document.getElementById('formEmail').value = user.email;
+                document.getElementById('formPassword').value = '••••••••';
+                document.getElementById('formPassword').required = false;
+                document.getElementById('formRole').value = user.role;
+                document.getElementById('formUnit').value = user.unit;
+                document.getElementById('formStatus').value = user.status;
+            }
+        }
+
+        window.closeModal = function() {
+            document.getElementById('userModal').classList.remove('show');
+        };
+
+        window.editUser = function(id) {
+            openModal('edit', id);
+        };
+
+        window.saveUser = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('editUserId').value;
+            const nama = document.getElementById('formNama').value;
+            const username = document.getElementById('formUsername').value;
+            const email = document.getElementById('formEmail').value;
+            const password = document.getElementById('formPassword').value;
+            const role = document.getElementById('formRole').value;
+            const unit = document.getElementById('formUnit').value;
+            const status = document.getElementById('formStatus').value;
+
+            const roleMap = {
+                admin: 'Administrator Sistem',
+                dosen: 'Dosen',
+                staf: 'Staf',
+                kaprodi: 'Kaprodi',
+                atasan: 'Atasan Langsung',
+                osdm: 'OSDM',
+                direktur: 'Direktur'
+            };
+            const unitMap = {
+                ti: 'Teknik Informatika',
+                si: 'Sistem Informasi',
+                ak: 'Akuntansi',
+                mn: 'Manajemen',
+                rektorat: 'Rektorat'
+            };
+
+            if (id) {
+                // Edit
+                const idx = users.findIndex(u => u.id === parseInt(id));
+                if (idx > -1) {
+                    users[idx].nama = nama;
+                    users[idx].username = username;
+                    users[idx].email = email;
+                    users[idx].role = role;
+                    users[idx].roleLabel = roleMap[role] || role;
+                    users[idx].unit = unit;
+                    users[idx].unitLabel = unitMap[unit] || unit;
+                    users[idx].status = status;
+                    if (password && password !== '••••••••') {
+                        // Simulasi update password
+                    }
+                }
+            } else {
+                // Tambah
+                const newUser = {
+                    id: nextId++,
+                    nama: nama,
+                    username: username,
+                    email: email,
+                    role: role,
+                    roleLabel: roleMap[role] || role,
+                    unit: unit,
+                    unitLabel: unitMap[unit] || unit,
+                    status: status
+                };
+                users.push(newUser);
+            }
+            closeModal();
+            renderUsers(users);
+            alert(id ? '✅ Pengguna berhasil diupdate!' : '✅ Pengguna berhasil ditambahkan!');
+        };
+
+        // ===== TOGGLE USER =====
+        window.toggleUser = function(id) {
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+            const newStatus = user.status === 'aktif' ? 'nonaktif' : 'aktif';
+            if (confirm(`${user.status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan'} akun ${user.nama}?`)) {
+                user.status = newStatus;
+                renderUsers(users);
+                alert(`✅ Akun ${user.nama} berhasil ${newStatus === 'aktif' ? 'diaktifkan' : 'dinonaktifkan'}`);
+            }
+        };
+
+        // ===== RESET PASSWORD =====
+        let resetUserId = null;
+
+        window.openResetModal = function(id) {
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+            resetUserId = id;
+            document.getElementById('resetUserName').textContent = user.nama;
+            document.getElementById('resetNewPassword').textContent = `Admin${String(Math.floor(10000 + Math.random() * 90000))}`;
+            document.getElementById('resetModal').classList.add('show');
+        };
+
+        window.closeResetModal = function() {
+            document.getElementById('resetModal').classList.remove('show');
+            resetUserId = null;
+        };
+
+        window.confirmReset = function() {
+            const user = users.find(u => u.id === resetUserId);
+            if (user) {
+                const newPass = document.getElementById('resetNewPassword').textContent;
+                alert(`✅ Password ${user.nama} berhasil direset menjadi: ${newPass}`);
+            }
+            closeResetModal();
+        };
+
+        // ===== RENDER ROLE =====
+        function renderRoles() {
+            const container = document.getElementById('roleListContainer');
+            container.innerHTML = roleData.map(r => `
+                <div class="role-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <span class="role-name">${r.icon} ${r.role}</span>
+                            <span class="role-count">(${r.count} pengguna)</span>
+                        </div>
+                        <span style="font-size:0.7rem; color:#94a3b8;">🛡️ Hak akses</span>
+                    </div>
+                    <div class="permission-list">
+                        ${r.permissions.map(p => `<span class="perm-item">✓ ${p}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ===== NOTIFICATION BELL =====
+        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+            const badge = this.querySelector('.badge');
+            if (badge) {
+                badge.style.display = 'none';
+                alert('📬 Tidak ada notifikasi baru.');
+                setTimeout(() => { badge.style.display = ''; }, 2000);
+            }
+        });
+
+        // ===== INIT =====
+        renderUsers(users);
+        renderRoles();
+
+        // Close modal on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
