@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Direktur - Sistem Manajemen Presensi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            background: #0f1a2e;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        #sidebar.hidden-sidebar {
+            transform: translateX(-100%);
+        }
+
+        #sidebar .logo-area {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #sidebar .logo-area h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        #sidebar .logo-area span {
+            color: #94a9c9;
+            font-size: 0.7rem;
+            font-weight: 400;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1rem;
+            margin: 0.2rem 0.75rem;
+            border-radius: 10px;
+            color: #94a9c9;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            gap: 12px;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #fff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #fff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        .nav-link .badge-notif {
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.6rem;
+            border-radius: 999px;
+            padding: 0.1rem 0.6rem;
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        .sidebar-user {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: auto;
+            position: sticky;
+            bottom: 0;
+            background: #0f1a2e;
+        }
+        .sidebar-user .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .sidebar-user .info .name {
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .sidebar-user .info .role {
+            color: #94a9c9;
+            font-size: 0.7rem;
+        }
+
+        /* ===== OVERLAY ===== */
+        #sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 40;
+            display: none;
+        }
+        #sidebar-overlay.show {
+            display: block;
+        }
+
+        /* ===== MAIN ===== */
+        #main-content {
+            margin-left: 260px;
+            padding: 1.5rem;
+            min-height: 100vh;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0 1.5rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .top-bar .page-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f1a2e;
+        }
+        .top-bar .page-title p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .top-bar-actions .notif-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+        .top-bar-actions .notif-bell .badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.55rem;
+            border-radius: 999px;
+            padding: 0.1rem 0.5rem;
+            font-weight: 700;
+        }
+        .top-bar-actions .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #0f1a2e;
+            background: none;
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .card-header h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #0f1a2e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-header .period-badge {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        /* ===== STAT CARD ===== */
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            transition: all 0.25s ease;
+        }
+        .stat-card:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        .stat-card .icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-card .number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #0f1a2e;
+            line-height: 1.2;
+        }
+        .stat-card .label {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .stat-card .trend {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+        }
+        .stat-card .trend.up {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .stat-card .trend.down {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .stat-card .trend.stable {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        /* ===== STATUS BADGE ===== */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            gap: 4px;
+        }
+        .badge-status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+        .badge-status.sangat_disiplin {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-status.sangat_disiplin .dot {
+            background: #15803d;
+        }
+        .badge-status.cukup_disiplin {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .badge-status.cukup_disiplin .dot {
+            background: #b45309;
+        }
+        .badge-status.kurang_disiplin {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-status.kurang_disiplin .dot {
+            background: #b91c1c;
+        }
+        .badge-status.disetujui {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-status.disetujui .dot {
+            background: #15803d;
+        }
+        .badge-status.ditolak {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-status.ditolak .dot {
+            background: #b91c1c;
+        }
+        .badge-status.menunggu {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .badge-status.menunggu .dot {
+            background: #b45309;
+        }
+
+        /* ===== CHART ===== */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        /* ===== NOTIFICATION ITEM ===== */
+        .notif-item {
+            padding: 0.65rem 1rem;
+            border-radius: 12px;
+            border-left: 4px solid #1e3a5f;
+            background: #f8fafc;
+            margin-bottom: 0.5rem;
+            transition: background 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .notif-item.unread {
+            background: #eff6ff;
+            border-left-color: #2563eb;
+        }
+        .notif-item .notif-time {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
+        .notif-item .notif-text {
+            font-size: 0.85rem;
+            color: #0f1a2e;
+            flex: 1;
+        }
+        .notif-item .notif-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .notif-item .notif-badge.urgent {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .notif-item .notif-badge.info {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .notif-item .notif-badge.success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        /* ===== RINGKASAN SDM ===== */
+        .sdm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #e9edf4;
+            font-size: 0.85rem;
+        }
+        .sdm-item .label {
+            font-weight: 500;
+            color: #0f1a2e;
+        }
+        .sdm-item .value {
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            #main-content {
+                margin-left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+            #sidebar-overlay.show {
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #main-content {
+                padding: 1rem;
+            }
+            .top-bar .page-title h2 {
+                font-size: 1.2rem;
+            }
+            .stat-card .number {
+                font-size: 1.4rem;
+            }
+            .notif-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .sdm-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
+            }
+            .grid-cols-2-mobile {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: #0f1a2e;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #1e3a5f;
+            border-radius: 4px;
+        }
+
+        .flex-center {
+            display: flex;
+            align-items: center;
+        }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .text-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR OVERLAY ===== -->
+    <div id="sidebar-overlay"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar">
+        <div class="logo-area">
+            <h1>📋 Presensi</h1>
+            <span>Sistem Manajemen SDM Kampus</span>
+        </div>
+
+        <nav style="padding: 0.75rem 0 0 0;">
+            <a class="nav-link active" onclick="closeSidebar()">
+                <span class="icon">📊</span> Dashboard
+                <span class="badge-notif">3</span>
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📄</span> Laporan Strategis
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">👥</span> SDM
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📊</span> Statistik
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="avatar">BS</div>
+            <div class="info">
+                <div class="name">Prof. Dr. Budi Santoso</div>
+                <div class="role">Direktur</div>
+            </div>
+            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="flex-center gap-3">
+                <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">☰</button>
+                <div class="page-title">
+                    <h2>Dashboard Direktur</h2>
+                    <p>Pantau kinerja SDM dan tingkat kehadiran institusi secara strategis</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div class="notif-bell" title="Notifikasi">
+                    🔔
+                    <span class="badge">3</span>
+                </div>
+                <div class="user-avatar" title="Prof. Dr. Budi Santoso">BS</div>
+            </div>
+        </div>
+
+        <!-- ===== STAT CARDS ===== -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card flex items-center gap-4">
+                <div class="icon-wrap" style="background:#dbeafe;color:#1d4ed8;">🏛️</div>
+                <div>
+                    <div class="number">187</div>
+                    <div class="label">Total Pegawai</div>
+                    <span class="trend up">↑ 3%</span>
+                </div>
+            </div>
+            <div class="stat-card flex items-center gap-4">
+                <div class="icon-wrap" style="background:#dcfce7;color:#15803d;">📈</div>
+                <div>
+                    <div class="number">87.5%</div>
+                    <div class="label">Tingkat Kehadiran</div>
+                    <span class="trend up">↑ 2.1%</span>
+                </div>
+            </div>
+            <div class="stat-card flex items-center gap-4">
+                <div class="icon-wrap" style="background:#fef3c7;color:#b45309;">⏰</div>
+                <div>
+                    <div class="number">12.5</div>
+                    <div class="label">Rata-rata Terlambat</div>
+                    <span class="trend down">↑ 1.3 menit</span>
+                </div>
+            </div>
+            <div class="stat-card flex items-center gap-4">
+                <div class="icon-wrap" style="background:#fee2e2;color:#b91c1c;">❌</div>
+                <div>
+                    <div class="number">8.2%</div>
+                    <div class="label">Tingkat Alpha</div>
+                    <span class="trend down">↑ 0.7%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ROW 2: KEHADIRAN INSTITUSI + UNIT KERJA ===== -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+            <!-- TINGKAT KEHADIRAN INSTITUSI -->
+            <div class="card lg:col-span-1">
+                <div class="card-header">
+                    <h3>🏛️ Tingkat Kehadiran Institusi</h3>
+                    <span class="period-badge">Juli 2026</span>
+                </div>
+                <div style="text-align:center;padding:0.5rem 0;">
+                    <div style="position:relative;width:140px;height:140px;margin:0 auto;">
+                        <canvas id="kehadiranDonut"></canvas>
+                    </div>
+                    <div style="margin-top:0.75rem;">
+                        <div style="font-size:2rem;font-weight:800;color:#0f1a2e;">87.5%</div>
+                        <div style="font-size:0.8rem;color:#64748b;">Tingkat Kehadiran</div>
+                        <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+                            <span style="font-size:0.75rem;color:#64748b;"><span style="display:inline-block;width:10px;height:10px;border-radius:999px;background:#15803d;"></span> Hadir: 142</span>
+                            <span style="font-size:0.75rem;color:#64748b;"><span style="display:inline-block;width:10px;height:10px;border-radius:999px;background:#b45309;"></span> Izin: 23</span>
+                            <span style="font-size:0.75rem;color:#64748b;"><span style="display:inline-block;width:10px;height:10px;border-radius:999px;background:#1d4ed8;"></span> Cuti: 12</span>
+                            <span style="font-size:0.75rem;color:#64748b;"><span style="display:inline-block;width:10px;height:10px;border-radius:999px;background:#b91c1c;"></span> Alpha: 10</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TINGKAT KEHADIRAN PER UNIT KERJA -->
+            <div class="card lg:col-span-2">
+                <div class="card-header">
+                    <h3>📊 Tingkat Kehadiran per Unit Kerja</h3>
+                    <span class="period-badge">Juli 2026</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="unitKehadiranChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ROW 3: DISIPLIN + IZIN/CUTI ===== -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+            <!-- STATISTIK DISIPLIN -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>⭐ Statistik Disiplin Pegawai</h3>
+                    <span class="period-badge">Juli 2026</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;border-radius:10px;background:#dcfce7;border:1px solid #bbf7d0;">
+                        <span style="font-weight:600;color:#15803d;">🟢 Sangat Disiplin</span>
+                        <span style="font-weight:700;font-size:1.1rem;color:#15803d;">124 (66.3%)</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;border-radius:10px;background:#fef3c7;border:1px solid #fde68a;">
+                        <span style="font-weight:600;color:#b45309;">🟡 Cukup Disiplin</span>
+                        <span style="font-weight:700;font-size:1.1rem;color:#b45309;">42 (22.5%)</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;border-radius:10px;background:#fee2e2;border:1px solid #fecaca;">
+                        <span style="font-weight:600;color:#b91c1c;">🔴 Kurang Disiplin</span>
+                        <span style="font-weight:700;font-size:1.1rem;color:#b91c1c;">21 (11.2%)</span>
+                    </div>
+                    <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid #e9edf4;display:flex;justify-content:space-between;font-size:0.8rem;color:#64748b;">
+                        <span>Total pegawai: 187</span>
+                        <span>Target disiplin: ≥75%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATISTIK IZIN DAN CUTI -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📋 Statistik Izin & Cuti</h3>
+                    <span class="period-badge">Juli 2026</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                    <div style="background:#f8fafc;border-radius:12px;padding:0.75rem 1rem;border:1px solid #e9edf4;">
+                        <div style="font-size:0.7rem;color:#64748b;">Total Pengajuan</div>
+                        <div style="font-size:1.5rem;font-weight:700;color:#0f1a2e;">35</div>
+                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem;">
+                            <span class="badge-status disetujui"><span class="dot"></span> 24</span>
+                            <span class="badge-status ditolak"><span class="dot"></span> 6</span>
+                            <span class="badge-status menunggu"><span class="dot"></span> 5</span>
+                        </div>
+                    </div>
+                    <div style="background:#f8fafc;border-radius:12px;padding:0.75rem 1rem;border:1px solid #e9edf4;">
+                        <div style="font-size:0.7rem;color:#64748b;">Total Pengajuan</div>
+                        <div style="font-size:1.5rem;font-weight:700;color:#0f1a2e;">18</div>
+                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem;">
+                            <span class="badge-status disetujui"><span class="dot"></span> 12</span>
+                            <span class="badge-status ditolak"><span class="dot"></span> 3</span>
+                            <span class="badge-status menunggu"><span class="dot"></span> 3</span>
+                        </div>
+                    </div>
+                    <div style="background:#f8fafc;border-radius:12px;padding:0.75rem 1rem;border:1px solid #e9edf4;grid-column:1/3;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-size:0.7rem;color:#64748b;">Rata-rata Cuti Terpakai</div>
+                                <div style="font-size:1.2rem;font-weight:700;color:#0f1a2e;">6.8 hari / tahun</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.7rem;color:#64748b;">Kuota Cuti Tahunan</div>
+                                <div style="font-size:1.2rem;font-weight:700;color:#0f1a2e;">12 hari</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.7rem;color:#64748b;">Sisa Kuota</div>
+                                <div style="font-size:1.2rem;font-weight:700;color:#1e3a5f;">5.2 hari</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ROW 4: TREN KEHADIRAN + EFEKTIVITAS ===== -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+            <!-- TREN KEHADIRAN BULANAN -->
+            <div class="card lg:col-span-2">
+                <div class="card-header">
+                    <h3>📈 Tren Kehadiran Bulanan</h3>
+                    <span class="period-badge">2026</span>
+                </div>
+                <div class="chart-container" style="height:180px;">
+                    <canvas id="trenKehadiranChart"></canvas>
+                </div>
+            </div>
+
+            <!-- EFEKTIVITAS JAM KERJA -->
+            <div class="card lg:col-span-1">
+                <div class="card-header">
+                    <h3>⏱️ Efektivitas Jam Kerja</h3>
+                    <span class="period-badge">Per Unit</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div class="sdm-item">
+                        <span class="label">Teknik Informatika</span>
+                        <span class="value">7.8 jam</span>
+                    </div>
+                    <div class="sdm-item">
+                        <span class="label">Sistem Informasi</span>
+                        <span class="value">7.5 jam</span>
+                    </div>
+                    <div class="sdm-item">
+                        <span class="label">Akuntansi</span>
+                        <span class="value">7.3 jam</span>
+                    </div>
+                    <div class="sdm-item">
+                        <span class="label">Manajemen</span>
+                        <span class="value">7.6 jam</span>
+                    </div>
+                    <div class="sdm-item">
+                        <span class="label">Rektorat</span>
+                        <span class="value">8.0 jam</span>
+                    </div>
+                    <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid #e9edf4;display:flex;justify-content:space-between;font-size:0.8rem;color:#64748b;">
+                        <span>Rata-rata institusi</span>
+                        <span style="font-weight:700;color:#0f1a2e;">7.6 jam</span>
+                    </div>
+                    <div style="font-size:0.7rem;color:#94a3b8;">Target efektivitas: ≥7.5 jam</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ROW 5: RINGKASAN SDM + NOTIFIKASI ===== -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- RINGKASAN SDM -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>👥 Ringkasan SDM</h3>
+                    <span class="period-badge">Per 11 Juli 2026</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                    <div style="background:#f8fafc;border-radius:10px;padding:0.5rem 0.75rem;border:1px solid #e9edf4;">
+                        <div style="font-size:0.7rem;color:#64748b;">Total Pegawai</div>
+                        <div style="font-size:1.2rem;font-weight:700;color:#0f1a2e;">187</div>
+                    </div>
+                    <div style="background:#f8fafc;border-radius:10px;padding:0.5rem 0.75rem;border:1px solid #e9edf4;">
+                        <div style="font-size:0.7rem;color:#64748b;">Unit Kerja</div>
+                        <div style="font-size:1.2rem;font-weight:700;color:#0f1a2e;">5</div>
+                    </div>
+                </div>
+                <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.4rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.6rem;border-radius:6px;background:#f1f5f9;font-size:0.8rem;">
+                        <span>👨‍🏫 Dosen</span>
+                        <span style="font-weight:600;">68</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.6rem;border-radius:6px;background:#f1f5f9;font-size:0.8rem;">
+                        <span>🧑‍💼 Staf</span>
+                        <span style="font-weight:600;">95</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.6rem;border-radius:6px;background:#f1f5f9;font-size:0.8rem;">
+                        <span>👔 Kaprodi / Atasan</span>
+                        <span style="font-weight:600;">12</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.6rem;border-radius:6px;background:#f1f5f9;font-size:0.8rem;">
+                        <span>📊 OSDM / Direktur</span>
+                        <span style="font-weight:600;">4</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.6rem;border-radius:6px;background:#f1f5f9;font-size:0.8rem;">
+                        <span>🛠️ Administrator</span>
+                        <span style="font-weight:600;">8</span>
+                    </div>
+                </div>
+                <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #e9edf4;font-size:0.75rem;color:#94a3b8;">
+                    📍 Unit kerja terbanyak: Teknik Informatika (42 pegawai)
+                </div>
+            </div>
+
+            <!-- NOTIFIKASI STRATEGIS -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🔔 Notifikasi Strategis</h3>
+                    <span class="link-all" style="color:#1e3a5f;font-size:0.8rem;font-weight:500;cursor:pointer;" onclick="alert('Menampilkan semua notifikasi strategis')">Lihat semua →</span>
+                </div>
+                <div style="max-height:340px;overflow-y:auto;padding-right:4px;">
+                    <div class="notif-item unread">
+                        <span class="notif-text">⚠️ Tingkat alpha meningkat 0.7% dibanding bulan lalu. Perlu perhatian pada unit Teknik Informatika.</span>
+                        <span class="notif-time">2 jam lalu</span>
+                        <span class="notif-badge urgent">Penting</span>
+                    </div>
+                    <div class="notif-item unread">
+                        <span class="notif-text">📊 Tingkat kehadiran institusi mencapai 87.5%, meningkat 2.1% dari bulan sebelumnya.</span>
+                        <span class="notif-time">4 jam lalu</span>
+                        <span class="notif-badge success">Positif</span>
+                    </div>
+                    <div class="notif-item unread">
+                        <span class="notif-text">📋 Terdapat 5 pengajuan izin dan 3 pengajuan cuti menunggu persetujuan tahap akhir oleh OSDM.</span>
+                        <span class="notif-time">6 jam lalu</span>
+                        <span class="notif-badge info">Info</span>
+                    </div>
+                    <div class="notif-item">
+                        <span class="notif-text">🏆 Unit Sistem Informasi mencapai tingkat kehadiran tertinggi (92.3%) bulan ini.</span>
+                        <span class="notif-time">1 hari lalu</span>
+                        <span class="notif-badge success">Prestasi</span>
+                    </div>
+                    <div class="notif-item">
+                        <span class="notif-text">⚠️ Rata-rata keterlambatan meningkat menjadi 12.5 menit. Unit Manajemen tertinggi (15.2 menit).</span>
+                        <span class="notif-time">2 hari lalu</span>
+                        <span class="notif-badge urgent">Perhatian</span>
+                    </div>
+                    <div class="notif-item">
+                        <span class="notif-text">📄 Laporan bulanan SDM Juli 2026 telah siap diunduh.</span>
+                        <span class="notif-time">3 hari lalu</span>
+                        <span class="notif-badge info">Info</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <div style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #e9edf4;text-align:center;color:#94a3b8;font-size:0.75rem;">
+            Sistem Manajemen Presensi SDM Kampus v2.0 &bull; 2026 &bull; Direktur
+        </div>
+
+    </main>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ================================================================
+        // CHART 1: KEHADIRAN DONUT
+        // ================================================================
+
+        let kehadiranDonut = null;
+
+        function initKehadiranDonut() {
+            const ctx = document.getElementById('kehadiranDonut').getContext('2d');
+            kehadiranDonut = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hadir', 'Izin', 'Cuti', 'Alpha'],
+                    datasets: [{
+                        data: [142, 23, 12, 10],
+                        backgroundColor: ['#15803d', '#b45309', '#1d4ed8', '#b91c1c'],
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleFont: { family: 'Inter', weight: '600', size: 12 },
+                            bodyFont: { family: 'Inter', size: 11 },
+                            cornerRadius: 8,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================================================================
+        // CHART 2: UNIT KEHADIRAN
+        // ================================================================
+
+        let unitKehadiranChart = null;
+
+        function initUnitKehadiranChart() {
+            const ctx = document.getElementById('unitKehadiranChart').getContext('2d');
+            unitKehadiranChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Teknik Informatika', 'Sistem Informasi', 'Akuntansi', 'Manajemen', 'Rektorat'],
+                    datasets: [{
+                        label: 'Tingkat Kehadiran (%)',
+                        data: [85.2, 92.3, 78.5, 82.1, 90.7],
+                        backgroundColor: [
+                            'rgba(30,58,95,0.8)',
+                            'rgba(21,128,61,0.8)',
+                            'rgba(180,83,9,0.8)',
+                            'rgba(29,78,216,0.8)',
+                            'rgba(124,58,237,0.8)'
+                        ],
+                        borderColor: [
+                            '#1e3a5f',
+                            '#15803d',
+                            '#b45309',
+                            '#1d4ed8',
+                            '#7c3aed'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        barPercentage: 0.6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleFont: { family: 'Inter', weight: '600', size: 12 },
+                            bodyFont: { family: 'Inter', size: 11 },
+                            cornerRadius: 8,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Kehadiran: ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { font: { family: 'Inter', size: 10 }, callback: function(value) { return value + '%'; } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================================================================
+        // CHART 3: TREN KEHADIRAN BULANAN
+        // ================================================================
+
+        let trenKehadiranChart = null;
+
+        function initTrenKehadiranChart() {
+            const ctx = document.getElementById('trenKehadiranChart').getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, 'rgba(30,58,95,0.3)');
+            gradient.addColorStop(1, 'rgba(30,58,95,0.0)');
+
+            trenKehadiranChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                    datasets: [{
+                        label: 'Tingkat Kehadiran (%)',
+                        data: [82, 84, 83, 85, 86, 85, 87.5, 88, 86, 87, 89, 88.5],
+                        borderColor: '#1e3a5f',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#1e3a5f',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleFont: { family: 'Inter', weight: '600', size: 12 },
+                            bodyFont: { family: 'Inter', size: 11 },
+                            cornerRadius: 8,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Kehadiran: ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 75,
+                            max: 95,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { font: { family: 'Inter', size: 9 }, callback: function(value) { return value + '%'; } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 9 } }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // ================================================================
+        // SIDEBAR
+        // ================================================================
+
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const hamburger = document.getElementById('hamburgerBtn');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        window.closeSidebar = function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        };
+
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSidebar();
+        });
+
+        // ================================================================
+        // NOTIFICATION BELL
+        // ================================================================
+
+        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+            const badge = this.querySelector('.badge');
+            if (badge && parseInt(badge.textContent) > 0) {
+                document.querySelectorAll('.notif-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                });
+                badge.textContent = '0';
+                alert('📬 Semua notifikasi strategis telah dibaca.');
+            } else {
+                alert('📬 Tidak ada notifikasi baru.');
+            }
+        });
+
+        // ================================================================
+        // INIT
+        // ================================================================
+
+        initKehadiranDonut();
+        initUnitKehadiranChart();
+        initTrenKehadiranChart();
+
+        console.log('✅ Dashboard Direktur loaded successfully!');
+        console.log('🏛️ Total Pegawai: 187');
+        console.log('📈 Tingkat Kehadiran: 87.5%');
+        console.log('⭐ Sangat Disiplin: 124 pegawai (66.3%)');
+    </script>
+</body>
+</html>
