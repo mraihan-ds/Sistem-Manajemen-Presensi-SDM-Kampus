@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audit & Monitoring - Sistem Manajemen Presensi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            background: #0f1a2e;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        #sidebar.hidden-sidebar {
+            transform: translateX(-100%);
+        }
+
+        #sidebar .logo-area {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #sidebar .logo-area h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        #sidebar .logo-area span {
+            color: #94a9c9;
+            font-size: 0.7rem;
+            font-weight: 400;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1rem;
+            margin: 0.2rem 0.75rem;
+            border-radius: 10px;
+            color: #94a9c9;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            gap: 12px;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #fff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #fff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        .nav-link .badge-notif {
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.6rem;
+            border-radius: 999px;
+            padding: 0.1rem 0.6rem;
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        .sidebar-user {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: auto;
+            position: sticky;
+            bottom: 0;
+            background: #0f1a2e;
+        }
+        .sidebar-user .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .sidebar-user .info .name {
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .sidebar-user .info .role {
+            color: #94a9c9;
+            font-size: 0.7rem;
+        }
+
+        /* ===== OVERLAY ===== */
+        #sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 40;
+            display: none;
+        }
+        #sidebar-overlay.show {
+            display: block;
+        }
+
+        /* ===== MAIN ===== */
+        #main-content {
+            margin-left: 260px;
+            padding: 1.5rem;
+            min-height: 100vh;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0 1.5rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .top-bar .page-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f1a2e;
+        }
+        .top-bar .page-title p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .top-bar-actions .notif-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+        .top-bar-actions .notif-bell .badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.55rem;
+            border-radius: 999px;
+            padding: 0.1rem 0.5rem;
+            font-weight: 700;
+        }
+        .top-bar-actions .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #0f1a2e;
+            background: none;
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .card-header h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #0f1a2e;
+        }
+        .card-header .link-all {
+            color: #1e3a5f;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .card-header .link-all:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== STAT CARD ===== */
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            transition: all 0.25s ease;
+        }
+        .stat-card:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        .stat-card .icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-card .number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #0f1a2e;
+            line-height: 1.2;
+        }
+        .stat-card .label {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* ===== BUTTON ===== */
+        .btn-primary {
+            background: #1e3a5f;
+            color: #fff;
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary:hover {
+            background: #14304e;
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            border: 1px solid #e9edf4;
+            color: #0f1a2e;
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-outline {
+            border: 1px solid #1e3a5f;
+            color: #1e3a5f;
+            background: transparent;
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            background: #1e3a5f;
+            color: #fff;
+        }
+
+        .btn-success {
+            background: #15803d;
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-success:hover {
+            background: #166534;
+        }
+
+        .btn-danger {
+            background: #b91c1c;
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-danger:hover {
+            background: #991b1b;
+        }
+
+        /* ===== STATUS BADGE ===== */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            gap: 4px;
+        }
+        .badge-status.online {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-status.online .dot {
+            background: #15803d;
+        }
+        .badge-status.offline {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-status.offline .dot {
+            background: #b91c1c;
+        }
+        .badge-status.warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .badge-status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+        .badge-status .pulse {
+            animation: pulse-dot 1.5s infinite;
+        }
+        @keyframes pulse-dot {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== FORM ===== */
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 0.2rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.5rem 0.8rem;
+            border: 1px solid #e9edf4;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            background: #fff;
+            transition: all 0.2s;
+            color: #0f1a2e;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
+        }
+        select.form-control {
+            appearance: auto;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        .table-wrap table {
+            width: 100%;
+            font-size: 0.85rem;
+        }
+        .table-wrap table thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e9edf4;
+            white-space: nowrap;
+        }
+        .table-wrap table tbody td {
+            padding: 0.65rem 0.75rem;
+            border-bottom: 1px solid #e9edf4;
+            color: #0f1a2e;
+            vertical-align: middle;
+        }
+        .table-wrap table tbody tr:hover {
+            background: #f8fafc;
+        }
+        .table-wrap table tbody .actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        /* ===== MONITORING ITEM ===== */
+        .monitor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.65rem 1rem;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e9edf4;
+            transition: all 0.2s;
+        }
+        .monitor-item:hover {
+            background: #f1f5f9;
+        }
+        .monitor-item .label {
+            font-weight: 500;
+            color: #0f1a2e;
+            font-size: 0.9rem;
+        }
+        .monitor-item .value {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        /* ===== ONLINE USERS ===== */
+        .online-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .online-user:last-child {
+            border-bottom: none;
+        }
+        .online-user .avatar-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        .online-user .user-name {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #0f1a2e;
+        }
+        .online-user .user-role {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .online-user .online-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #15803d;
+            margin-left: auto;
+            flex-shrink: 0;
+            animation: pulse-dot 2s infinite;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 580px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-box .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .modal-box .modal-header h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f1a2e;
+        }
+        .modal-box .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 0 0.25rem;
+        }
+        .modal-box .modal-close:hover {
+            color: #0f1a2e;
+        }
+        .modal-box .detail-row {
+            display: flex;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .modal-box .detail-row .label {
+            font-weight: 500;
+            color: #64748b;
+            width: 120px;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+        .modal-box .detail-row .value {
+            color: #0f1a2e;
+            font-size: 0.85rem;
+        }
+
+        /* ===== CHART ===== */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            #main-content {
+                margin-left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+            #sidebar-overlay.show {
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #main-content {
+                padding: 1rem;
+            }
+            .top-bar .page-title h2 {
+                font-size: 1.2rem;
+            }
+            .modal-box {
+                padding: 1.25rem;
+                margin: 0.5rem;
+            }
+            .table-wrap table {
+                font-size: 0.75rem;
+            }
+            .table-wrap table thead th,
+            .table-wrap table tbody td {
+                padding: 0.4rem 0.5rem;
+            }
+            .monitor-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            .filter-group .form-group {
+                min-width: 100%;
+            }
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: #0f1a2e;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #1e3a5f;
+            border-radius: 4px;
+        }
+
+        .flex-center {
+            display: flex;
+            align-items: center;
+        }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+        .filter-group .form-group {
+            margin-bottom: 0;
+            min-width: 140px;
+        }
+        .filter-group .form-group label {
+            font-size: 0.7rem;
+            margin-bottom: 0.1rem;
+        }
+        .filter-group .form-control {
+            padding: 0.4rem 0.7rem;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR OVERLAY ===== -->
+    <div id="sidebar-overlay"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar">
+        <div class="logo-area">
+            <h1>📋 Presensi</h1>
+            <span>Sistem Manajemen SDM Kampus</span>
+        </div>
+
+        <nav style="padding: 0.75rem 0 0 0;">
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">👥</span> Manajemen Pengguna
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">🔄</span> Integrasi Fingerprint
+            </a>
+            <a class="nav-link active" onclick="closeSidebar()">
+                <span class="icon">🔍</span> Audit & Monitoring
+                <span class="badge-notif">24</span>
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📝</span> Kondisi Khusus
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📄</span> Laporan
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">⚙️</span> Parameter
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="avatar">AS</div>
+            <div class="info">
+                <div class="name">Admin Sistem</div>
+                <div class="role">Administrator</div>
+            </div>
+            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="flex-center gap-3">
+                <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">☰</button>
+                <div class="page-title">
+                    <h2>Audit & Monitoring</h2>
+                    <p>Pantau seluruh aktivitas sistem dan status kesehatan infrastruktur</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div class="notif-bell" title="Notifikasi">
+                    🔔
+                    <span class="badge">6</span>
+                </div>
+                <div class="user-avatar" title="Admin Sistem">AS</div>
+            </div>
+        </div>
+
+        <!-- ===== STAT CARDS ===== -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card flex items-center gap-4">
+                <div class="icon-wrap" style="background:#dbeafe;color:#1d4ed8;">📋</div>
+                <div>
+                    <div class="number" id="totalLogs">1,284</div>
+                    <div class="label">Total Audit Log</div>
+                </div>
+            </div>
+            <div class="stat-card flex items-center gap-4">
+                <div class="icon-wrap" style="background:#dcfce7;color:#15803d;">📅</div>
+                <div>
+                    <div class="number" id="todayLogs">48</div>
+                    <div class="label">Log Hari Ini</div>
+                </div>
+            </div>
+            <div class="stat-card flex items-center gap-4">
+                <div class="icon-wrap" style="background:#fef3c7;color:#b45309;">👤</div>
+                <div>
+                    <div class="number" id="activeUsers">12</div>
+                    <div class="label">Pengguna Online</div>
+                </div>
+            </div>
+            <div class="stat-card flex items-center gap-4">
+                <div class="icon-wrap" style="background:#fce7f3;color:#be185d;">📊</div>
+                <div>
+                    <div class="number" id="activityTypes">8</div>
+                    <div class="label">Jenis Aktivitas</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== MONITORING SISTEM ===== -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+            <!-- STATUS SERVER -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🖥️ Status Server</h3>
+                    <span id="serverStatus" class="badge-status online"><span class="dot pulse"></span> Online</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <div class="monitor-item">
+                        <span class="label">CPU Usage</span>
+                        <span class="value" id="cpuUsage">32%</span>
+                    </div>
+                    <div class="monitor-item">
+                        <span class="label">Memory Usage</span>
+                        <span class="value" id="memUsage">47%</span>
+                    </div>
+                    <div class="monitor-item">
+                        <span class="label">Disk Usage</span>
+                        <span class="value" id="diskUsage">63%</span>
+                    </div>
+                    <div class="monitor-item">
+                        <span class="label">Uptime</span>
+                        <span class="value" id="uptime">14d 7h 32m</span>
+                    </div>
+                    <div class="monitor-item">
+                        <span class="label">Response Time</span>
+                        <span class="value" id="responseTime">124ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KONEKSI -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🔌 Status Koneksi</h3>
+                    <button class="btn-secondary" style="padding:0.2rem 0.75rem;font-size:0.75rem;" onclick="refreshConnections()">🔄 Refresh</button>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <div class="monitor-item">
+                        <span class="label">🔗 Fingerprint Mesin</span>
+                        <span id="fpConnection" class="badge-status online"><span class="dot"></span> Terhubung</span>
+                    </div>
+                    <div class="monitor-item">
+                        <span class="label">🗄️ Database</span>
+                        <span id="dbConnection" class="badge-status online"><span class="dot"></span> Terhubung</span>
+                    </div>
+                    <div class="monitor-item">
+                        <span class="label">📧 Email Service</span>
+                        <span id="emailConnection" class="badge-status online"><span class="dot"></span> Terhubung</span>
+                    </div>
+                    <div class="monitor-item">
+                        <span class="label">📡 SDK Fingerprint</span>
+                        <span id="sdkConnection" class="badge-status online"><span class="dot"></span> Aktif</span>
+                    </div>
+                    <div class="monitor-item">
+                        <span class="label">📊 Data Presensi Hari Ini</span>
+                        <span class="value" id="presensiToday" style="font-weight:600;color:#0f1a2e;">142</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PENGGUNA ONLINE -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>👤 Pengguna Online</h3>
+                    <span style="font-size:0.75rem;color:#64748b;" id="onlineCount">12 online</span>
+                </div>
+                <div id="onlineUsersContainer" style="max-height:280px;overflow-y:auto;padding-right:4px;">
+                    <!-- Online users via JS -->
+                </div>
+                <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #e9edf4;display:flex;justify-content:space-between;font-size:0.8rem;color:#64748b;">
+                    <span>Total pengguna aktif hari ini: <strong>47</strong></span>
+                    <span>Puncak: <strong>14:30</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== AUDIT TRAIL ===== -->
+        <div class="card">
+            <div class="card-header">
+                <h3>🔍 Audit Trail</h3>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <button class="btn-success" onclick="exportLogs('pdf')">📄 PDF</button>
+                    <button class="btn-success" onclick="exportLogs('excel')">📊 Excel</button>
+                    <button class="btn-secondary" style="padding:0.3rem 0.8rem;font-size:0.75rem;" onclick="refreshAudit()">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <!-- FILTER -->
+            <div style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;background:#f8fafc;padding:1rem;border-radius:12px;border:1px solid #e9edf4;">
+                <div class="form-group" style="min-width:160px;margin-bottom:0;">
+                    <label>🔍 Cari</label>
+                    <input type="text" class="form-control" placeholder="Cari aktivitas..." id="searchLog" style="font-size:0.8rem;padding:0.4rem 0.7rem;" oninput="filterLogs()">
+                </div>
+                <div class="form-group" style="min-width:150px;margin-bottom:0;">
+                    <label>Jenis Aktivitas</label>
+                    <select class="form-control" id="filterActivity" style="font-size:0.8rem;padding:0.4rem 0.7rem;" onchange="filterLogs()">
+                        <option value="">Semua</option>
+                        <option value="Login">Login</option>
+                        <option value="Logout">Logout</option>
+                        <option value="Pengajuan Izin">Pengajuan Izin</option>
+                        <option value="Pengajuan Cuti">Pengajuan Cuti</option>
+                        <option value="Approval">Approval</option>
+                        <option value="Reject">Reject</option>
+                        <option value="Sinkronisasi Fingerprint">Sinkronisasi Fingerprint</option>
+                        <option value="Input Presensi Manual">Input Presensi Manual</option>
+                        <option value="Update Data">Update Data</option>
+                        <option value="Delete Data">Delete Data</option>
+                        <option value="Kondisi Khusus">Kondisi Khusus</option>
+                    </select>
+                </div>
+                <div class="form-group" style="min-width:140px;margin-bottom:0;">
+                    <label>Pengguna</label>
+                    <select class="form-control" id="filterUser" style="font-size:0.8rem;padding:0.4rem 0.7rem;" onchange="filterLogs()">
+                        <option value="">Semua</option>
+                        <option value="Admin Sistem">Admin Sistem</option>
+                        <option value="Dr. Siti Rahayu">Dr. Siti Rahayu</option>
+                        <option value="Dr. Ahmad Fauzi">Dr. Ahmad Fauzi</option>
+                        <option value="Drs. Haryanto">Drs. Haryanto</option>
+                        <option value="Kaprodi TI">Kaprodi TI</option>
+                        <option value="OSDM">OSDM</option>
+                    </select>
+                </div>
+                <div class="form-group" style="min-width:160px;margin-bottom:0;">
+                    <label>Tanggal</label>
+                    <input type="date" class="form-control" id="filterDate" style="font-size:0.8rem;padding:0.4rem 0.7rem;" onchange="filterLogs()">
+                </div>
+                <button class="btn-secondary" style="padding:0.4rem 1rem;font-size:0.8rem;" onclick="resetFilters()">↺ Reset</button>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">#</th>
+                            <th>Waktu</th>
+                            <th>Pengguna</th>
+                            <th>Role</th>
+                            <th>Jenis Aktivitas</th>
+                            <th>Detail</th>
+                            <th style="width:100px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                        <!-- Data via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                <span style="font-size:0.8rem;color:#94a3b8;" id="logCountInfo">Menampilkan 1-10 dari 48 data</span>
+                <div style="display:flex;gap:0.3rem;" id="paginationControls">
+                    <button class="btn-secondary" style="padding:0.3rem 0.8rem;font-size:0.75rem;" onclick="prevPage()">«</button>
+                    <button class="btn-primary" style="padding:0.3rem 0.8rem;font-size:0.75rem;" id="page1">1</button>
+                    <button class="btn-secondary" style="padding:0.3rem 0.8rem;font-size:0.75rem;" id="page2">2</button>
+                    <button class="btn-secondary" style="padding:0.3rem 0.8rem;font-size:0.75rem;" id="page3">3</button>
+                    <button class="btn-secondary" style="padding:0.3rem 0.8rem;font-size:0.75rem;" onclick="nextPage()">»</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <div style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #e9edf4;text-align:center;color:#94a3b8;font-size:0.75rem;">
+            Sistem Manajemen Presensi SDM Kampus v2.0 &bull; 2026 &bull; Administrator Sistem
+        </div>
+
+    </main>
+
+    <!-- ===== MODAL DETAIL ===== -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>📄 Detail Aktivitas</h3>
+                <button class="modal-close" onclick="closeDetailModal()">✕</button>
+            </div>
+            <div id="detailContent">
+                <!-- Detail via JS -->
+            </div>
+            <div style="margin-top:1.25rem;display:flex;justify-content:flex-end;">
+                <button class="btn-secondary" onclick="closeDetailModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ===== DUMMY AUDIT LOGS =====
+        let auditLogs = [
+            { id: 1, time: '2026-07-11 10:45:30', user: 'Admin Sistem', role: 'Administrator', activity: 'Sinkronisasi Fingerprint',
+                detail: 'Sinkronisasi manual, 47 data presensi diperbarui', ip: '192.168.1.10' },
+            { id: 2, time: '2026-07-11 10:40:15', user: 'Dr. Siti Rahayu', role: 'Dosen', activity: 'Pengajuan Izin',
+                detail: 'Izin dinas luar, 11-12 Juli 2026', ip: '192.168.1.25' },
+            { id: 3, time: '2026-07-11 10:35:00', user: 'Kaprodi TI', role: 'Kaprodi', activity: 'Approval',
+                detail: 'Menyetujui izin Dr. Siti Rahayu (dinas luar)', ip: '192.168.1.30' },
+            { id: 4, time: '2026-07-11 10:30:45', user: 'Admin Sistem', role: 'Administrator', activity: 'Input Presensi Manual',
+                detail: 'Input manual untuk Dr. Ahmad Fauzi (kondisi khusus)', ip: '192.168.1.10' },
+            { id: 5, time: '2026-07-11 10:25:20', user: 'OSDM', role: 'OSDM', activity: 'Approval',
+                detail: 'Menyetujui cuti tahunan Drs. Haryanto (3 hari)', ip: '192.168.1.40' },
+            { id: 6, time: '2026-07-11 10:20:00', user: 'Dr. Ahmad Fauzi', role: 'Dosen', activity: 'Kondisi Khusus',
+                detail: 'Lupa fingerprint, 11 Juli 2026', ip: '192.168.1.26' },
+            { id: 7, time: '2026-07-11 10:15:30', user: 'Admin Sistem', role: 'Administrator', activity: 'Update Data',
+                detail: 'Update jadwal kerja unit Teknik Informatika', ip: '192.168.1.10' },
+            { id: 8, time: '2026-07-11 10:10:00', user: 'Dr. Siti Rahayu', role: 'Dosen', activity: 'Login',
+                detail: 'Login dari browser Chrome, Windows 11', ip: '192.168.1.25' },
+            { id: 9, time: '2026-07-11 10:05:45', user: 'Admin Sistem', role: 'Administrator', activity: 'Sinkronisasi Fingerprint',
+                detail: 'Sinkronisasi otomatis, 38 data presensi diperbarui', ip: '192.168.1.10' },
+            { id: 10, time: '2026-07-11 10:00:00', user: 'Drs. Haryanto', role: 'OSDM', activity: 'Login',
+                detail: 'Login dari browser Firefox, macOS', ip: '192.168.1.41' },
+            { id: 11, time: '2026-07-11 09:55:20', user: 'Rina Dewi', role: 'Atasan Langsung', activity: 'Reject',
+                detail: 'Menolak izin staf (alasan: tidak sesuai prosedur)', ip: '192.168.1.35' },
+            { id: 12, time: '2026-07-11 09:50:00', user: 'Admin Sistem', role: 'Administrator', activity: 'Delete Data',
+                detail: 'Menghapus data presensi duplikat (user: Budi)', ip: '192.168.1.10' },
+            { id: 13, time: '2026-07-11 09:45:30', user: 'Dr. Siti Rahayu', role: 'Dosen', activity: 'Pengajuan Cuti',
+                detail: 'Cuti sakit, 12-13 Juli 2026 (dokumen terlampir)', ip: '192.168.1.25' },
+            { id: 14, time: '2026-07-11 09:40:00', user: 'Kaprodi TI', role: 'Kaprodi', activity: 'Reject',
+                detail: 'Menolak cuti Dr. Siti Rahayu (alasan: kuota penuh)', ip: '192.168.1.30' },
+            { id: 15, time: '2026-07-11 09:35:20', user: 'OSDM', role: 'OSDM', activity: 'Approval',
+                detail: 'Menyetujui kondisi khusus (dinas luar) Dr. Ahmad Fauzi', ip: '192.168.1.40' },
+        ];
+
+        let filteredLogs = [...auditLogs];
+        let currentPage = 1;
+        const pageSize = 10;
+
+        // ===== ONLINE USERS =====
+        let onlineUsers = [
+            { name: 'Admin Sistem', role: 'Administrator', initials: 'AS' },
+            { name: 'Dr. Siti Rahayu', role: 'Dosen', initials: 'SR' },
+            { name: 'Dr. Ahmad Fauzi', role: 'Dosen', initials: 'AF' },
+            { name: 'Kaprodi TI', role: 'Kaprodi', initials: 'KT' },
+            { name: 'OSDM', role: 'OSDM', initials: 'OS' },
+            { name: 'Drs. Haryanto', role: 'OSDM', initials: 'DH' },
+            { name: 'Rina Dewi', role: 'Atasan Langsung', initials: 'RD' },
+            { name: 'Siti Nurhaliza', role: 'Dosen', initials: 'SN' },
+            { name: 'Dian Permatasari', role: 'Staf', initials: 'DP' },
+            { name: 'Ir. Bambang Wijaya', role: 'Dosen', initials: 'BW' },
+            { name: 'Rahmat Hidayat', role: 'Staf', initials: 'RH' },
+            { name: 'Prof. Dr. Budi Santoso', role: 'Direktur', initials: 'BS' },
+        ];
+
+        // ===== RENDER ONLINE USERS =====
+        function renderOnlineUsers() {
+            const container = document.getElementById('onlineUsersContainer');
+            container.innerHTML = onlineUsers.map(u => `
+                <div class="online-user">
+                    <div class="avatar-sm">${u.initials}</div>
+                    <div>
+                        <div class="user-name">${u.name}</div>
+                        <div class="user-role">${u.role}</div>
+                    </div>
+                    <div class="online-dot"></div>
+                </div>
+            `).join('');
+            document.getElementById('onlineCount').textContent = onlineUsers.length + ' online';
+            document.getElementById('activeUsers').textContent = onlineUsers.length;
+        }
+
+        // ===== RENDER AUDIT LOGS =====
+        function renderAuditLogs(logs) {
+            const tbody = document.getElementById('auditTableBody');
+            const list = logs || filteredLogs;
+
+            if (list.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#94a3b8;">Tidak ada data audit log</td></tr>`;
+                document.getElementById('logCountInfo').textContent = '0 data ditemukan';
+                return;
+            }
+
+            const start = (currentPage - 1) * pageSize;
+            const end = Math.min(start + pageSize, list.length);
+            const pageData = list.slice(start, end);
+
+            tbody.innerHTML = pageData.map((log, idx) => `
+                <tr>
+                    <td>${start + idx + 1}</td>
+                    <td style="font-size:0.75rem;color:#64748b;">${log.time}</td>
+                    <td><strong>${log.user}</strong></td>
+                    <td><span class="badge-role" style="background:#f1f5f9;color:#64748b;padding:0.15rem 0.6rem;border-radius:6px;font-size:0.65rem;font-weight:600;">${log.role}</span></td>
+                    <td>
+                        <span class="badge-status ${getActivityBadge(log.activity)}">
+                            <span class="dot"></span> ${log.activity}
+                        </span>
+                    </td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.8rem;color:#64748b;">${log.detail}</td>
+                    <td>
+                        <button class="btn-primary" style="padding:0.2rem 0.6rem;font-size:0.7rem;" onclick="showDetail(${log.id})">
+                            📄 Detail
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('logCountInfo').textContent =
+                `Menampilkan ${start + 1}-${end} dari ${list.length} data`;
+        }
+
+        // ===== ACTIVITY BADGE COLOR =====
+        function getActivityBadge(activity) {
+            const map = {
+                'Login': 'online',
+                'Logout': 'offline',
+                'Pengajuan Izin': 'warning',
+                'Pengajuan Cuti': 'warning',
+                'Approval': 'online',
+                'Reject': 'offline',
+                'Sinkronisasi Fingerprint': 'online',
+                'Input Presensi Manual': 'warning',
+                'Update Data': 'online',
+                'Delete Data': 'offline',
+                'Kondisi Khusus': 'warning'
+            };
+            return map[activity] || 'online';
+        }
+
+        // ===== FILTER LOGS =====
+        function filterLogs() {
+            const search = document.getElementById('searchLog').value.toLowerCase();
+            const activity = document.getElementById('filterActivity').value;
+            const user = document.getElementById('filterUser').value;
+            const date = document.getElementById('filterDate').value;
+
+            filteredLogs = auditLogs.filter(log => {
+                const matchSearch = log.user.toLowerCase().includes(search) ||
+                    log.activity.toLowerCase().includes(search) ||
+                    log.detail.toLowerCase().includes(search);
+                const matchActivity = !activity || log.activity === activity;
+                const matchUser = !user || log.user === user;
+                const matchDate = !date || log.time.startsWith(date);
+                return matchSearch && matchActivity && matchUser && matchDate;
+            });
+
+            currentPage = 1;
+            renderAuditLogs(filteredLogs);
+            updatePagination();
+        }
+
+        window.filterLogs = filterLogs;
+
+        // ===== RESET FILTERS =====
+        function resetFilters() {
+            document.getElementById('searchLog').value = '';
+            document.getElementById('filterActivity').value = '';
+            document.getElementById('filterUser').value = '';
+            document.getElementById('filterDate').value = '';
+            filteredLogs = [...auditLogs];
+            currentPage = 1;
+            renderAuditLogs(filteredLogs);
+            updatePagination();
+        }
+
+        window.resetFilters = resetFilters;
+
+        // ===== PAGINATION =====
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredLogs.length / pageSize);
+            const controls = document.getElementById('paginationControls');
+            const btns = controls.querySelectorAll('button:not(:first-child):not(:last-child)');
+            const totalBtns = Math.min(totalPages, 3);
+
+            // Show/hide based on total pages
+            controls.style.display = totalPages > 1 ? 'flex' : 'flex';
+
+            // Update button visibility
+            btns.forEach((btn, idx) => {
+                const pageNum = idx + 1;
+                if (pageNum <= totalBtns) {
+                    btn.style.display = '';
+                    btn.textContent = pageNum;
+                    btn.className = pageNum === currentPage ? 'btn-primary' : 'btn-secondary';
+                    btn.style.padding = '0.3rem 0.8rem';
+                    btn.style.fontSize = '0.75rem';
+                    btn.onclick = () => { goToPage(pageNum); };
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+
+            // Update prev/next buttons
+            const prevBtn = controls.querySelector('button:first-child');
+            const nextBtn = controls.querySelector('button:last-child');
+            prevBtn.onclick = prevPage;
+            nextBtn.onclick = nextPage;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderAuditLogs(filteredLogs);
+            updatePagination();
+        }
+
+        window.prevPage = function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderAuditLogs(filteredLogs);
+                updatePagination();
+            }
+        };
+
+        window.nextPage = function() {
+            const totalPages = Math.ceil(filteredLogs.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderAuditLogs(filteredLogs);
+                updatePagination();
+            }
+        };
+
+        // ===== SHOW DETAIL =====
+        function showDetail(id) {
+            const log = auditLogs.find(l => l.id === id);
+            if (!log) return;
+
+            const container = document.getElementById('detailContent');
+            container.innerHTML = `
+                <div class="detail-row"><span class="label">ID Log</span><span class="value">#${log.id}</span></div>
+                <div class="detail-row"><span class="label">Waktu</span><span class="value">${log.time}</span></div>
+                <div class="detail-row"><span class="label">Pengguna</span><span class="value">${log.user}</span></div>
+                <div class="detail-row"><span class="label">Role</span><span class="value">${log.role}</span></div>
+                <div class="detail-row"><span class="label">Aktivitas</span><span class="value"><span class="badge-status ${getActivityBadge(log.activity)}"><span class="dot"></span> ${log.activity}</span></span></div>
+                <div class="detail-row"><span class="label">Detail</span><span class="value">${log.detail}</span></div>
+                <div class="detail-row"><span class="label">IP Address</span><span class="value">${log.ip}</span></div>
+                <div class="detail-row"><span class="label">User Agent</span><span class="value" style="font-size:0.75rem;color:#94a3b8;">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36</span></div>
+            `;
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        window.showDetail = showDetail;
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('show');
+        }
+
+        window.closeDetailModal = closeDetailModal;
+
+        // ===== EXPORT LOGS =====
+        function exportLogs(format) {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Generating...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                const count = filteredLogs.length;
+                const filename = `audit_log_${new Date().toISOString().slice(0,10)}`;
+                alert(`✅ ${format.toUpperCase()} exported!\n\nFile: ${filename}.${format}\nTotal data: ${count} logs\n\n(In production, this would download the actual file.)`);
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }, 1500);
+        }
+
+        window.exportLogs = exportLogs;
+
+        // ===== REFRESH =====
+        function refreshAudit() {
+            const btn = event.target;
+            btn.textContent = '⏳';
+            setTimeout(() => {
+                // Simulate new data
+                const now = new Date();
+                const timeStr = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 8);
+                const activities = ['Login', 'Pengajuan Izin', 'Approval', 'Sinkronisasi Fingerprint', 'Update Data'];
+                const users = ['Admin Sistem', 'Dr. Siti Rahayu', 'Kaprodi TI', 'OSDM', 'Drs. Haryanto'];
+                const newLog = {
+                    id: auditLogs.length + 1,
+                    time: timeStr,
+                    user: users[Math.floor(Math.random() * users.length)],
+                    role: 'Administrator',
+                    activity: activities[Math.floor(Math.random() * activities.length)],
+                    detail: `Aktivitas baru pada ${timeStr}`,
+                    ip: '192.168.1.' + (10 + Math.floor(Math.random() * 50))
+                };
+                auditLogs.unshift(newLog);
+                filteredLogs = [...auditLogs];
+                currentPage = 1;
+                renderAuditLogs(filteredLogs);
+                updatePagination();
+                document.getElementById('todayLogs').textContent = parseInt(document.getElementById('todayLogs').textContent) +
+                    1;
+                btn.textContent = '✅';
+                setTimeout(() => { btn.textContent = '🔄 Refresh'; }, 800);
+            }, 500);
+        }
+
+        window.refreshAudit = refreshAudit;
+
+        // ===== REFRESH CONNECTIONS =====
+        function refreshConnections() {
+            const btn = event.target;
+            btn.textContent = '⏳';
+            setTimeout(() => {
+                const statuses = ['online', 'online', 'online', 'online'];
+                const labels = ['fpConnection', 'dbConnection', 'emailConnection', 'sdkConnection'];
+                const texts = ['Terhubung', 'Terhubung', 'Terhubung', 'Aktif'];
+                labels.forEach((id, idx) => {
+                    const el = document.getElementById(id);
+                    const isOnline = Math.random() > 0.1;
+                    el.className = `badge-status ${isOnline ? 'online' : 'offline'}`;
+                    el.innerHTML = `<span class="dot"></span> ${isOnline ? texts[idx] : 'Terputus'}`;
+                });
+                btn.textContent = '✅';
+                setTimeout(() => { btn.textContent = '🔄 Refresh'; }, 800);
+            }, 800);
+        }
+
+        window.refreshConnections = refreshConnections;
+
+        // ===== SIDEBAR =====
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const hamburger = document.getElementById('hamburgerBtn');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        window.closeSidebar = function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        };
+
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { closeSidebar();
+                closeDetailModal(); }
+        });
+
+        // ===== NOTIFICATION BELL =====
+        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+            const badge = this.querySelector('.badge');
+            if (badge) {
+                badge.style.display = 'none';
+                alert('📬 Tidak ada notifikasi baru.');
+                setTimeout(() => { badge.style.display = ''; }, 2000);
+            }
+        });
+
+        // ===== CLOSE MODAL ON OVERLAY =====
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+
+        // ===== SIMULATE REAL-TIME UPDATES =====
+        setInterval(() => {
+            // Update CPU/Memory/Disk randomly
+            document.getElementById('cpuUsage').textContent = Math.floor(20 + Math.random() * 40) + '%';
+            document.getElementById('memUsage').textContent = Math.floor(30 + Math.random() * 40) + '%';
+            document.getElementById('diskUsage').textContent = Math.floor(50 + Math.random() * 30) + '%';
+            document.getElementById('responseTime').textContent = Math.floor(80 + Math.random() * 120) + 'ms';
+        }, 10000);
+
+        // ===== INIT =====
+        renderOnlineUsers();
+        renderAuditLogs(auditLogs);
+        updatePagination();
+        document.getElementById('totalLogs').textContent = auditLogs.length;
+        document.getElementById('todayLogs').textContent = auditLogs.filter(l => l.time.startsWith('2026-07-11')).length;
+
+        console.log('✅ Audit & Monitoring page loaded successfully!');
+    </script>
+</body>
+</html>
