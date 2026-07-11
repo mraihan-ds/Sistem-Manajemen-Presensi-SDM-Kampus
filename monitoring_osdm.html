@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoring & Presensi · OSDM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .sidebar {
+            background: #0f1a2e;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a2a44;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3b5a82;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            color: #94a9c9;
+            transition: all 0.2s;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #ffffff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .badge-notif {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        .tab-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .tab-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .tab-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .status-badge {
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-hadir {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-izin {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-cuti {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .status-alpha {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .status-terlambat {
+            background: #fce4ec;
+            color: #c62828;
+        }
+        .status-tepat {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status-fingerprint {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        .status-manual {
+            background: #fce7f3;
+            color: #be185d;
+        }
+        .status-sangat-disiplin {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-cukup-disiplin {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-kurang-disiplin {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .filter-btn {
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .filter-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .filter-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .table-row {
+            transition: background 0.2s;
+        }
+        .table-row:hover {
+            background: #f8fafc;
+        }
+        .table-row td {
+            padding: 0.6rem 0.7rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.82rem;
+            vertical-align: middle;
+        }
+        .table-header th {
+            padding: 0.6rem 0.7rem;
+            text-align: left;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #64748b;
+            border-bottom: 2px solid #e9edf4;
+        }
+        .chart-container {
+            position: relative;
+            height: 180px;
+        }
+        .top-pegawai-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.4rem 0.7rem;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e9edf4;
+        }
+        .top-pegawai-item .rank {
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            width: 20px;
+            text-align: center;
+        }
+        .top-pegawai-item .rank.gold {
+            color: #f59e0b;
+        }
+        .top-pegawai-item .rank.silver {
+            color: #94a3b8;
+        }
+        .top-pegawai-item .rank.bronze {
+            color: #d97706;
+        }
+        .export-btn {
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .export-btn:hover {
+            background: #14304e;
+        }
+        .export-btn-outline {
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: white;
+            color: #1e3a5f;
+            border: 1px solid #1e3a5f;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .export-btn-outline:hover {
+            background: #f0f5fe;
+        }
+        .unit-compare-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #e9edf4;
+        }
+        .unit-compare-item .bar {
+            height: 6px;
+            border-radius: 999px;
+            background: #e9edf4;
+            flex: 1;
+            overflow: hidden;
+        }
+        .unit-compare-item .bar .fill {
+            height: 100%;
+            border-radius: 999px;
+            background: #1e3a5f;
+            transition: width 0.8s ease;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 40;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        @media (max-width: 640px) {
+            .tab-btn {
+                font-size: 0.7rem;
+                padding: 0.35rem 0.7rem;
+            }
+            .stat-card {
+                padding: 0.75rem 1rem;
+            }
+            .stat-card .text-2xl {
+                font-size: 1.2rem;
+            }
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .table-wrapper table {
+                min-width: 700px;
+            }
+            .filter-group {
+                flex-wrap: wrap;
+                gap: 0.3rem;
+            }
+            .filter-btn {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.6rem;
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .toast-notif {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f1a2e;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            max-width: 340px;
+            transform: translateY(120%);
+            transition: transform 0.4s ease;
+            font-size: 0.85rem;
+        }
+        .toast-notif.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2a6 6 0 0 0-6 6v3a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6z" />
+                        <path d="M12 18v3" />
+                        <path d="M8 21h8" />
+                        <path d="M6 11a6 6 0 0 0 12 0" />
+                        <path d="M8 8a4 4 0 0 1 8 0" />
+                        <path d="M10 13a2 2 0 1 1 4 0" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-lg leading-none">Presensi SDM</p>
+                    <p class="text-[#94a9c9] text-xs">Sistem Terintegrasi</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📊</span> Dashboard OSDM
+            </a>
+            <a href="#" class="nav-link active flex items-center">
+                <span class="icon">📋</span> Monitoring &amp; Presensi
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📝</span> Persetujuan
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📊</span> Laporan
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">🔔</span> Notifikasi
+                <span class="badge-notif">8</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <a href="#" class="nav-link flex items-center text-red-400 hover:text-red-300 hover:bg-red-950/30">
+                <span class="icon">🚪</span> Logout
+            </a>
+            <div class="mt-3 flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
+                <div>
+                    <p class="text-white text-sm font-medium">OSDM Utama</p>
+                    <p class="text-[#94a9c9] text-xs">Organisasi &amp; SDM</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-6">
+
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1a2e]">📋 Monitoring &amp; Presensi</h1>
+                    <p class="text-sm text-gray-500">Pantau kehadiran, keterlambatan, dan kedisiplinan seluruh pegawai</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 shadow-sm border border-gray-200">
+                    <span class="text-xs text-gray-500">Periode:</span>
+                    <select class="text-xs border-0 bg-transparent font-medium text-[#0f1a2e] focus:outline-none" id="periodSelect">
+                        <option>Juli 2026</option>
+                        <option>Juni 2026</option>
+                        <option>Mei 2026</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">OSDM Utama</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === TABS === -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button class="tab-btn active" data-tab="kehadiran">📋 Kehadiran</button>
+            <button class="tab-btn" data-tab="keterlambatan">⏰ Keterlambatan</button>
+            <button class="tab-btn" data-tab="kedisiplinan">📈 Kedisiplinan</button>
+            <button class="tab-btn" data-tab="rekap">📊 Rekap Presensi</button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 1: MONITORING KEHADIRAN -->
+        <!-- ============================================================ -->
+        <div id="tab-kehadiran" class="tab-content active fade-in">
+            <!-- Filter -->
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-2 filter-group">
+                    <input type="date" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600" value="2026-07-01" />
+                    <span class="text-gray-400 text-xs">—</span>
+                    <input type="date" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600" value="2026-07-10" />
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                        <option>Akuntansi</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Status</option>
+                        <option>Hadir</option>
+                        <option>Izin</option>
+                        <option>Cuti</option>
+                        <option>Alpha</option>
+                    </select>
+                    <button class="text-xs bg-[#1e3a5f] text-white px-4 py-1.5 rounded-lg hover:bg-[#14304e] transition-colors">Terapkan</button>
+                </div>
+                <div class="ml-auto flex gap-2">
+                    <button class="export-btn-outline text-xs">📥 Excel</button>
+                    <button class="export-btn text-xs">📊 PDF</button>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">Total Data</p>
+                    <p class="text-2xl font-bold text-[#0f1a2e]">150</p>
+                </div>
+                <div class="stat-card text-center border-green-200 bg-green-50/50">
+                    <p class="text-xs text-green-600 font-medium">Hadir</p>
+                    <p class="text-2xl font-bold text-green-700">112</p>
+                    <p class="text-xs text-green-500">74.7%</p>
+                </div>
+                <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                    <p class="text-xs text-yellow-600 font-medium">Tidak Hadir</p>
+                    <p class="text-2xl font-bold text-yellow-700">38</p>
+                    <p class="text-xs text-yellow-500">25.3%</p>
+                </div>
+                <div class="stat-card text-center border-blue-200 bg-blue-50/50">
+                    <p class="text-xs text-blue-600 font-medium">Persentase Kehadiran</p>
+                    <p class="text-2xl font-bold text-blue-700">74.7%</p>
+                    <p class="text-xs text-blue-500">↑ 2.1% dari bulan lalu</p>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="stat-card mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-[#0f1a2e]">📈 Grafik Kehadiran Harian</h3>
+                    <span class="text-xs text-gray-400">Juli 2026</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="kehadiranChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabel -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📋 Data Kehadiran Pegawai</h3>
+                    <span class="text-xs text-gray-400">Menampilkan 10 dari 150 data</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Unit Kerja</th>
+                                <th>Tanggal</th>
+                                <th>Jam Masuk</th>
+                                <th>Jam Keluar</th>
+                                <th>Status</th>
+                                <th>Sumber Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kehadiranTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-2.5 border-t border-[#e9edf4] flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Menampilkan 1-10 dari 150 data</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">«</button>
+                        <button class="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded-lg">1</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">2</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">3</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: MONITORING KETERLAMBATAN -->
+        <!-- ============================================================ -->
+        <div id="tab-keterlambatan" class="tab-content fade-in">
+            <!-- Filter -->
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-2 filter-group">
+                    <input type="date" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600" value="2026-07-01" />
+                    <span class="text-gray-400 text-xs">—</span>
+                    <input type="date" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600" value="2026-07-10" />
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Durasi</option>
+                        <option>&lt; 10 menit</option>
+                        <option>10-30 menit</option>
+                        <option>&gt; 30 menit</option>
+                    </select>
+                    <button class="text-xs bg-[#1e3a5f] text-white px-4 py-1.5 rounded-lg hover:bg-[#14304e] transition-colors">Terapkan</button>
+                </div>
+                <div class="ml-auto flex gap-2">
+                    <button class="export-btn-outline text-xs">📥 Excel</button>
+                    <button class="export-btn text-xs">📊 PDF</button>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card text-center border-orange-200 bg-orange-50/50">
+                    <p class="text-xs text-orange-600 font-medium">Total Terlambat</p>
+                    <p class="text-2xl font-bold text-orange-700">23</p>
+                    <p class="text-xs text-orange-500">pegawai</p>
+                </div>
+                <div class="stat-card text-center border-orange-200 bg-orange-50/50">
+                    <p class="text-xs text-orange-600 font-medium">Rata-rata Durasi</p>
+                    <p class="text-2xl font-bold text-orange-700">12</p>
+                    <p class="text-xs text-orange-500">menit</p>
+                </div>
+                <div class="stat-card text-center border-red-200 bg-red-50/50">
+                    <p class="text-xs text-red-600 font-medium">Total Durasi</p>
+                    <p class="text-2xl font-bold text-red-700">276</p>
+                    <p class="text-xs text-red-500">menit</p>
+                </div>
+                <div class="stat-card text-center border-red-200 bg-red-50/50">
+                    <p class="text-xs text-red-600 font-medium">&gt; 30 menit</p>
+                    <p class="text-2xl font-bold text-red-700">7</p>
+                    <p class="text-xs text-red-500">pegawai</p>
+                </div>
+            </div>
+
+            <!-- Chart + Top 5 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                <div class="lg:col-span-2 stat-card">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold text-[#0f1a2e]">📈 Tren Keterlambatan</h3>
+                        <span class="text-xs text-gray-400">Juli 2026</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="keterlambatanChart"></canvas>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm mb-3">🏆 Top 5 Terlambat</h3>
+                    <div class="space-y-2" id="topTerlambatList">
+                        <!-- diisi JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Keterlambatan -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">⏰ Data Keterlambatan Pegawai</h3>
+                    <span class="text-xs text-gray-400">Menampilkan 10 dari 23 data</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Unit Kerja</th>
+                                <th>Tanggal</th>
+                                <th>Jam Masuk</th>
+                                <th>Jam Kerja</th>
+                                <th>Durasi Terlambat</th>
+                                <th>Jumlah Terlambat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keterlambatanTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-2.5 border-t border-[#e9edf4] flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Menampilkan 1-10 dari 23 data</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">«</button>
+                        <button class="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded-lg">1</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">2</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">3</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 3: MONITORING KEDISIPLINAN -->
+        <!-- ============================================================ -->
+        <div id="tab-kedisiplinan" class="tab-content fade-in">
+            <!-- Filter -->
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-2 filter-group">
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                        <option>Akuntansi</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Juli 2026</option>
+                        <option>Juni 2026</option>
+                        <option>Mei 2026</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Status</option>
+                        <option>Sangat Disiplin</option>
+                        <option>Cukup Disiplin</option>
+                        <option>Kurang Disiplin</option>
+                    </select>
+                    <button class="text-xs bg-[#1e3a5f] text-white px-4 py-1.5 rounded-lg hover:bg-[#14304e] transition-colors">Terapkan</button>
+                </div>
+                <div class="ml-auto flex gap-2">
+                    <button class="export-btn-outline text-xs">📥 Excel</button>
+                    <button class="export-btn text-xs">📊 PDF</button>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card text-center border-green-200 bg-green-50/50">
+                    <p class="text-xs text-green-600 font-medium">Sangat Disiplin</p>
+                    <p class="text-2xl font-bold text-green-700">93</p>
+                    <p class="text-xs text-green-500">62%</p>
+                </div>
+                <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                    <p class="text-xs text-yellow-600 font-medium">Cukup Disiplin</p>
+                    <p class="text-2xl font-bold text-yellow-700">42</p>
+                    <p class="text-xs text-yellow-500">28%</p>
+                </div>
+                <div class="stat-card text-center border-red-200 bg-red-50/50">
+                    <p class="text-xs text-red-600 font-medium">Kurang Disiplin</p>
+                    <p class="text-2xl font-bold text-red-700">15</p>
+                    <p class="text-xs text-red-500">10%</p>
+                </div>
+                <div class="stat-card text-center border-blue-200 bg-blue-50/50">
+                    <p class="text-xs text-blue-600 font-medium">Total Alpha</p>
+                    <p class="text-2xl font-bold text-blue-700">8</p>
+                    <p class="text-xs text-blue-500">hari ini</p>
+                </div>
+            </div>
+
+            <!-- Chart Distribusi -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="stat-card">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm mb-3">📊 Distribusi Tingkat Kedisiplinan</h3>
+                    <div class="chart-container">
+                        <canvas id="kedisiplinanChart"></canvas>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm mb-3">📋 Ringkasan Disiplin</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                            <span class="text-sm text-gray-600">Total Alpha (Bulan Ini)</span>
+                            <span class="text-lg font-bold text-red-700">18</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                            <span class="text-sm text-gray-600">Total Pulang Awal</span>
+                            <span class="text-lg font-bold text-orange-700">12</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                            <span class="text-sm text-gray-600">Rata-rata Jam Kerja Efektif</span>
+                            <span class="text-lg font-bold text-blue-700">7.6 jam</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                            <span class="text-sm text-gray-600">Tingkat Kepatuhan Presensi</span>
+                            <span class="text-lg font-bold text-green-700">85.3%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Kedisiplinan -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📈 Tingkat Kedisiplinan Pegawai</h3>
+                    <span class="text-xs text-gray-400">Menampilkan 10 dari 150 data</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Unit Kerja</th>
+                                <th>Total Kehadiran</th>
+                                <th>Alpha</th>
+                                <th>Pulang Awal</th>
+                                <th>Jam Kerja Efektif</th>
+                                <th>Tingkat Kepatuhan</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kedisiplinanTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-2.5 border-t border-[#e9edf4] flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Menampilkan 1-10 dari 150 data</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">«</button>
+                        <button class="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded-lg">1</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">2</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">3</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 4: REKAP PRESENSI SELURUH PEGAWAI -->
+        <!-- ============================================================ -->
+        <div id="tab-rekap" class="tab-content fade-in">
+            <!-- Filter -->
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-2 filter-group">
+                    <input type="date" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600" value="2026-07-01" />
+                    <span class="text-gray-400 text-xs">—</span>
+                    <input type="date" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600" value="2026-07-10" />
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                        <option>Akuntansi</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Status</option>
+                        <option>Hadir</option>
+                        <option>Izin</option>
+                        <option>Cuti</option>
+                        <option>Alpha</option>
+                    </select>
+                    <button class="text-xs bg-[#1e3a5f] text-white px-4 py-1.5 rounded-lg hover:bg-[#14304e] transition-colors">Terapkan</button>
+                </div>
+                <div class="ml-auto flex gap-2">
+                    <button class="export-btn-outline text-xs" onclick="showToast('📥 Export Excel')">📥 Excel</button>
+                    <button class="export-btn text-xs" onclick="showToast('📊 Export PDF')">📊 PDF</button>
+                </div>
+            </div>
+
+            <!-- Statistik Ringkasan per Unit -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="stat-card">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm mb-3">🏢 Ringkasan Statistik per Unit Kerja</h3>
+                    <div class="space-y-2" id="unitSummary">
+                        <!-- diisi JS -->
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm mb-3">📊 Perbandingan Antar Unit Kerja</h3>
+                    <div class="space-y-2" id="unitCompare">
+                        <!-- diisi JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Rekap -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📊 Rekap Presensi Seluruh Pegawai</h3>
+                    <span class="text-xs text-gray-400">Menampilkan 10 dari 150 data</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Unit Kerja</th>
+                                <th>Role</th>
+                                <th>Total Hari</th>
+                                <th>Hadir</th>
+                                <th>Izin</th>
+                                <th>Cuti</th>
+                                <th>Alpha</th>
+                                <th>Persentase</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rekapTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-2.5 border-t border-[#e9edf4] flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Menampilkan 1-10 dari 150 data</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">«</button>
+                        <button class="px-3 py-1 text-xs bg-[#1e3a5f] text-white rounded-lg">1</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">2</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">3</button>
+                        <button class="px-3 py-1 text-xs border border-gray-200 rounded-lg hover:bg-gray-50">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-[0.6rem] text-gray-400 border-t border-gray-200 pt-4">
+            <span>SRS · Sistem Manajemen Presensi SDM Kampus</span>
+            <span class="mx-1.5">•</span>
+            <span>v1.0</span>
+            <span class="mx-1.5">•</span>
+            <span>Monitoring &amp; Presensi</span>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast-notif" id="toastNotif"></div>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== TOAST =====
+        let toastTimeout;
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotif');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ===== TABS =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-' + tabId).classList.add('active');
+                // Re-render charts jika diperlukan
+                setTimeout(() => {
+                    if (tabId === 'kehadiran') initKehadiranChart();
+                    if (tabId === 'keterlambatan') initKeterlambatanChart();
+                    if (tabId === 'kedisiplinan') initKedisiplinanChart();
+                }, 100);
+            });
+        });
+
+        // ===== DATA DUMMY =====
+        const pegawaiData = [
+            { name: 'Budi Santoso', unit: 'Teknik Informatika', role: 'Dosen', date: '10 Jul 2026', masuk: '07:45', keluar: '16:00',
+                status: 'Hadir', source: 'Fingerprint' },
+            { name: 'Siti Rahayu', unit: 'Sistem Informasi', role: 'Dosen', date: '10 Jul 2026', masuk: '08:15', keluar: '16:30',
+                status: 'Hadir', source: 'Fingerprint' },
+            { name: 'Agus Wijaya', unit: 'Manajemen', role: 'Staf', date: '10 Jul 2026', masuk: '08:30', keluar: '16:15',
+                status: 'Hadir', source: 'Input Manual Admin' },
+            { name: 'Dewi Lestari', unit: 'Akuntansi', role: 'Dosen', date: '10 Jul 2026', masuk: '—', keluar: '—',
+                status: 'Izin', source: 'Izin' },
+            { name: 'Rudi Hermawan', unit: 'Teknik Elektro', role: 'Staf', date: '10 Jul 2026', masuk: '—', keluar: '—',
+                status: 'Cuti', source: 'Cuti' },
+            { name: 'Andi Pratama', unit: 'Manajemen', role: 'Staf', date: '10 Jul 2026', masuk: '—', keluar: '—',
+                status: 'Alpha', source: '—' },
+            { name: 'Rina Sari', unit: 'Akuntansi', role: 'Dosen', date: '10 Jul 2026', masuk: '—', keluar: '—', status: 'Alpha',
+                source: '—' },
+            { name: 'Doni Saputra', unit: 'Teknik Informatika', role: 'Staf', date: '10 Jul 2026', masuk: '07:50', keluar: '16:00',
+                status: 'Hadir', source: 'Fingerprint' },
+            { name: 'Maya Anggraini', unit: 'Sistem Informasi', role: 'Dosen', date: '10 Jul 2026', masuk: '08:00', keluar: '16:00',
+                status: 'Hadir', source: 'Fingerprint' },
+            { name: 'Fajar Kurniawan', unit: 'Teknik Elektro', role: 'Staf', date: '10 Jul 2026', masuk: '08:45', keluar: '16:30',
+                status: 'Hadir', source: 'Fingerprint' }
+        ];
+
+        const terlambatData = [
+            { name: 'Budi Santoso', unit: 'Teknik Informatika', date: '10 Jul 2026', masuk: '08:25', jamKerja: '08:00',
+                durasi: 25, total: 4 },
+            { name: 'Siti Rahayu', unit: 'Sistem Informasi', date: '10 Jul 2026', masuk: '08:18', jamKerja: '08:00',
+                durasi: 18, total: 3 },
+            { name: 'Agus Wijaya', unit: 'Manajemen', date: '10 Jul 2026', masuk: '08:15', jamKerja: '08:00', durasi: 15,
+                total: 5 },
+            { name: 'Dewi Lestari', unit: 'Akuntansi', date: '09 Jul 2026', masuk: '08:12', jamKerja: '08:00', durasi: 12,
+                total: 2 },
+            { name: 'Rudi Hermawan', unit: 'Teknik Elektro', date: '09 Jul 2026', masuk: '08:10', jamKerja: '08:00',
+                durasi: 10, total: 3 },
+            { name: 'Doni Saputra', unit: 'Teknik Informatika', date: '08 Jul 2026', masuk: '08:08', jamKerja: '08:00',
+                durasi: 8, total: 2 },
+            { name: 'Maya Anggraini', unit: 'Sistem Informasi', date: '08 Jul 2026', masuk: '08:20', jamKerja: '08:00',
+                durasi: 20, total: 4 },
+            { name: 'Fajar Kurniawan', unit: 'Teknik Elektro', date: '07 Jul 2026', masuk: '08:30', jamKerja: '08:00',
+                durasi: 30, total: 3 },
+            { name: 'Andi Pratama', unit: 'Manajemen', date: '07 Jul 2026', masuk: '08:05', jamKerja: '08:00', durasi: 5,
+                total: 1 },
+            { name: 'Rina Sari', unit: 'Akuntansi', date: '06 Jul 2026', masuk: '08:15', jamKerja: '08:00', durasi: 15,
+                total: 2 }
+        ];
+
+        const topTerlambatData = [
+            { name: 'Budi Santoso', unit: 'Teknik Informatika', durasi: 25 },
+            { name: 'Siti Rahayu', unit: 'Sistem Informasi', durasi: 18 },
+            { name: 'Agus Wijaya', unit: 'Manajemen', durasi: 15 },
+            { name: 'Dewi Lestari', unit: 'Akuntansi', durasi: 12 },
+            { name: 'Rudi Hermawan', unit: 'Teknik Elektro', durasi: 10 }
+        ];
+
+        const disiplinData = [
+            { name: 'Budi Santoso', unit: 'Teknik Informatika', hadir: 22, alpha: 0, pulangAwal: 0, jamKerja: 8.2,
+                kepatuhan: 100, status: 'Sangat Disiplin' },
+            { name: 'Siti Rahayu', unit: 'Sistem Informasi', hadir: 20, alpha: 1, pulangAwal: 0, jamKerja: 7.8,
+                kepatuhan: 95, status: 'Sangat Disiplin' },
+            { name: 'Agus Wijaya', unit: 'Manajemen', hadir: 18, alpha: 2, pulangAwal: 1, jamKerja: 7.2, kepatuhan: 82,
+                status: 'Cukup Disiplin' },
+            { name: 'Dewi Lestari', unit: 'Akuntansi', hadir: 21, alpha: 0, pulangAwal: 0, jamKerja: 8.0, kepatuhan: 100,
+                status: 'Sangat Disiplin' },
+            { name: 'Rudi Hermawan', unit: 'Teknik Elektro', hadir: 16, alpha: 3, pulangAwal: 2, jamKerja: 6.8,
+                kepatuhan: 73, status: 'Kurang Disiplin' },
+            { name: 'Andi Pratama', unit: 'Manajemen', hadir: 14, alpha: 4, pulangAwal: 1, jamKerja: 6.5, kepatuhan: 64,
+                status: 'Kurang Disiplin' },
+            { name: 'Rina Sari', unit: 'Akuntansi', hadir: 19, alpha: 1, pulangAwal: 1, jamKerja: 7.5, kepatuhan: 86,
+                status: 'Cukup Disiplin' },
+            { name: 'Doni Saputra', unit: 'Teknik Informatika', hadir: 23, alpha: 0, pulangAwal: 0, jamKerja: 8.3,
+                kepatuhan: 100, status: 'Sangat Disiplin' },
+            { name: 'Maya Anggraini', unit: 'Sistem Informasi', hadir: 17, alpha: 2, pulangAwal: 1, jamKerja: 7.0,
+                kepatuhan: 77, status: 'Cukup Disiplin' },
+            { name: 'Fajar Kurniawan', unit: 'Teknik Elektro', hadir: 15, alpha: 3, pulangAwal: 2, jamKerja: 6.5,
+                kepatuhan: 68, status: 'Kurang Disiplin' }
+        ];
+
+        const rekapData = [
+            { name: 'Budi Santoso', unit: 'Teknik Informatika', role: 'Dosen', total: 16, hadir: 12, izin: 2, cuti: 1,
+                alpha: 1, persentase: 75 },
+            { name: 'Siti Rahayu', unit: 'Sistem Informasi', role: 'Dosen', total: 16, hadir: 14, izin: 1, cuti: 1,
+                alpha: 0, persentase: 88 },
+            { name: 'Agus Wijaya', unit: 'Manajemen', role: 'Staf', total: 16, hadir: 10, izin: 3, cuti: 1, alpha: 2,
+                persentase: 63 },
+            { name: 'Dewi Lestari', unit: 'Akuntansi', role: 'Dosen', total: 16, hadir: 13, izin: 2, cuti: 0, alpha: 1,
+                persentase: 81 },
+            { name: 'Rudi Hermawan', unit: 'Teknik Elektro', role: 'Staf', total: 16, hadir: 9, izin: 2, cuti: 2, alpha: 3,
+                persentase: 56 },
+            { name: 'Andi Pratama', unit: 'Manajemen', role: 'Staf', total: 16, hadir: 8, izin: 3, cuti: 0, alpha: 5,
+                persentase: 50 },
+            { name: 'Rina Sari', unit: 'Akuntansi', role: 'Dosen', total: 16, hadir: 11, izin: 3, cuti: 1, alpha: 1,
+                persentase: 69 },
+            { name: 'Doni Saputra', unit: 'Teknik Informatika', role: 'Staf', total: 16, hadir: 15, izin: 0, cuti: 1,
+                alpha: 0, persentase: 94 },
+            { name: 'Maya Anggraini', unit: 'Sistem Informasi', role: 'Dosen', total: 16, hadir: 10, izin: 3, cuti: 1,
+                alpha: 2, persentase: 63 },
+            { name: 'Fajar Kurniawan', unit: 'Teknik Elektro', role: 'Staf', total: 16, hadir: 9, izin: 2, cuti: 2, alpha: 3,
+                persentase: 56 }
+        ];
+
+        const unitSummaryData = [
+            { name: 'Teknik Informatika', total: 28, hadir: 22, izin: 3, cuti: 2, alpha: 1, persentase: 78.6 },
+            { name: 'Sistem Informasi', total: 25, hadir: 20, izin: 3, cuti: 1, alpha: 1, persentase: 80.0 },
+            { name: 'Manajemen', total: 30, hadir: 21, izin: 4, cuti: 2, alpha: 3, persentase: 70.0 },
+            { name: 'Akuntansi', total: 22, hadir: 18, izin: 2, cuti: 1, alpha: 1, persentase: 81.8 },
+            { name: 'Teknik Elektro', total: 20, hadir: 15, izin: 2, cuti: 2, alpha: 1, persentase: 75.0 },
+            { name: 'Hukum', total: 25, hadir: 16, izin: 4, cuti: 2, alpha: 3, persentase: 64.0 }
+        ];
+
+        // ===== RENDER TABEL KEHADIRAN =====
+        function renderKehadiranTable() {
+            const tbody = document.getElementById('kehadiranTableBody');
+            const statusMap = {
+                'Hadir': 'status-hadir',
+                'Izin': 'status-izin',
+                'Cuti': 'status-cuti',
+                'Alpha': 'status-alpha'
+            };
+            const sourceMap = {
+                'Fingerprint': 'status-fingerprint',
+                'Input Manual Admin': 'status-manual',
+                'Izin': 'status-izin',
+                'Cuti': 'status-cuti',
+                '—': ''
+            };
+
+            tbody.innerHTML = pegawaiData.map(p => `
+                    <tr class="table-row">
+                        <td class="font-medium text-[#0f1a2e]">${p.name}</td>
+                        <td class="text-gray-600">${p.unit}</td>
+                        <td class="text-gray-600">${p.date}</td>
+                        <td class="text-gray-600">${p.masuk}</td>
+                        <td class="text-gray-600">${p.keluar}</td>
+                        <td><span class="status-badge ${statusMap[p.status] || ''}">${p.status}</span></td>
+                        <td><span class="status-badge ${sourceMap[p.source] || ''}">${p.source}</span></td>
+                    </tr>
+                `).join('');
+        }
+
+        // ===== RENDER TABEL KETERLAMBATAN =====
+        function renderKeterlambatanTable() {
+            const tbody = document.getElementById('keterlambatanTableBody');
+            tbody.innerHTML = terlambatData.map(p => `
+                    <tr class="table-row">
+                        <td class="font-medium text-[#0f1a2e]">${p.name}</td>
+                        <td class="text-gray-600">${p.unit}</td>
+                        <td class="text-gray-600">${p.date}</td>
+                        <td class="text-gray-600">${p.masuk}</td>
+                        <td class="text-gray-600">${p.jamKerja}</td>
+                        <td class="font-medium text-red-600">+${p.durasi} mnt</td>
+                        <td class="font-medium text-[#0f1a2e]">${p.total}x</td>
+                    </tr>
+                `).join('');
+        }
+
+        // ===== RENDER TOP 5 TERLAMBAT =====
+        function renderTopTerlambat() {
+            const container = document.getElementById('topTerlambatList');
+            const ranks = ['🥇', '🥈', '🥉', '4', '5'];
+            const rankClasses = ['gold', 'silver', 'bronze', '', ''];
+
+            container.innerHTML = topTerlambatData.map((item, index) => `
+                    <div class="top-pegawai-item">
+                        <span class="rank ${rankClasses[index]}">${ranks[index]}</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-[#0f1a2e]">${item.name}</p>
+                            <p class="text-xs text-gray-400">${item.unit}</p>
+                        </div>
+                        <span class="text-sm font-semibold text-red-600">+${item.durasi} mnt</span>
+                    </div>
+                `).join('');
+        }
+
+        // ===== RENDER TABEL KEDISIPLINAN =====
+        function renderKedisiplinanTable() {
+            const tbody = document.getElementById('kedisiplinanTableBody');
+            const statusMap = {
+                'Sangat Disiplin': 'status-sangat-disiplin',
+                'Cukup Disiplin': 'status-cukup-disiplin',
+                'Kurang Disiplin': 'status-kurang-disiplin'
+            };
+
+            tbody.innerHTML = disiplinData.map(p => `
+                    <tr class="table-row">
+                        <td class="font-medium text-[#0f1a2e]">${p.name}</td>
+                        <td class="text-gray-600">${p.unit}</td>
+                        <td class="text-gray-600 text-center">${p.hadir}</td>
+                        <td class="text-red-600 text-center font-medium">${p.alpha}</td>
+                        <td class="text-orange-600 text-center font-medium">${p.pulangAwal}</td>
+                        <td class="text-blue-600 text-center font-medium">${p.jamKerja} jam</td>
+                        <td class="text-center font-medium">${p.kepatuhan}%</td>
+                        <td><span class="status-badge ${statusMap[p.status] || ''}">${p.status}</span></td>
+                    </tr>
+                `).join('');
+        }
+
+        // ===== RENDER TABEL REKAP =====
+        function renderRekapTable() {
+            const tbody = document.getElementById('rekapTableBody');
+            tbody.innerHTML = rekapData.map(p => `
+                    <tr class="table-row">
+                        <td class="font-medium text-[#0f1a2e]">${p.name}</td>
+                        <td class="text-gray-600">${p.unit}</td>
+                        <td class="text-gray-600">${p.role}</td>
+                        <td class="text-gray-600 text-center">${p.total}</td>
+                        <td class="text-green-600 text-center font-medium">${p.hadir}</td>
+                        <td class="text-yellow-600 text-center font-medium">${p.izin}</td>
+                        <td class="text-blue-600 text-center font-medium">${p.cuti}</td>
+                        <td class="text-red-600 text-center font-medium">${p.alpha}</td>
+                        <td class="text-center font-bold text-[#0f1a2e]">${p.persentase}%</td>
+                    </tr>
+                `).join('');
+        }
+
+        // ===== RENDER UNIT SUMMARY =====
+        function renderUnitSummary() {
+            const container = document.getElementById('unitSummary');
+            container.innerHTML = unitSummaryData.map(u => `
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                        <div>
+                            <p class="text-sm font-medium text-[#0f1a2e]">${u.name}</p>
+                            <p class="text-xs text-gray-400">${u.hadir}/${u.total} hadir</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-[#0f1a2e]">${u.persentase}%</span>
+                            <div class="w-20 h-1.5 bg-gray-200 rounded-full mt-1">
+                                <div class="h-1.5 bg-[#1e3a5f] rounded-full" style="width:${u.persentase}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // ===== RENDER UNIT COMPARE =====
+        function renderUnitCompare() {
+            const container = document.getElementById('unitCompare');
+            const sorted = [...unitSummaryData].sort((a, b) => b.persentase - a.persentase);
+            const max = sorted[0]?.persentase || 100;
+
+            container.innerHTML = sorted.map(u => `
+                    <div class="unit-compare-item">
+                        <span class="text-xs font-medium text-[#0f1a2e] w-24 truncate">${u.name}</span>
+                        <div class="bar">
+                            <div class="fill" style="width: ${(u.persentase / max) * 100}%"></div>
+                        </div>
+                        <span class="text-xs font-bold text-[#0f1a2e] w-10 text-right">${u.persentase}%</span>
+                    </div>
+                `).join('');
+        }
+
+        // ===== CHARTS =====
+        let kehadiranChartInstance = null;
+        let keterlambatanChartInstance = null;
+        let kedisiplinanChartInstance = null;
+
+        function initKehadiranChart() {
+            const ctx = document.getElementById('kehadiranChart');
+            if (!ctx) return;
+            if (kehadiranChartInstance) kehadiranChartInstance.destroy();
+
+            kehadiranChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    datasets: [{
+                        label: 'Hadir',
+                        data: [18, 20, 16, 19, 17, 12, 10],
+                        backgroundColor: '#1e3a5f',
+                        borderRadius: 4,
+                    }, {
+                        label: 'Izin',
+                        data: [3, 2, 4, 3, 5, 2, 1],
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4,
+                    }, {
+                        label: 'Cuti',
+                        data: [2, 3, 1, 2, 2, 1, 1],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4,
+                    }, {
+                        label: 'Alpha',
+                        data: [1, 1, 2, 1, 2, 1, 0],
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleColor: '#ffffff',
+                            bodyColor: '#94a9c9',
+                            cornerRadius: 10,
+                            padding: 10,
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 5, font: { size: 9 }, color: '#94a3b8' },
+                            grid: { color: 'rgba(0,0,0,0.04)' } },
+                        x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8' } }
+                    },
+                    interaction: { intersect: false, mode: 'index' },
+                }
+            });
+        }
+
+        function initKeterlambatanChart() {
+            const ctx = document.getElementById('keterlambatanChart');
+            if (!ctx) return;
+            if (keterlambatanChartInstance) keterlambatanChartInstance.destroy();
+
+            keterlambatanChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    datasets: [{
+                        label: 'Rata-rata Keterlambatan (menit)',
+                        data: [8, 12, 15, 10, 18, 6, 4],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239,68,68,0.1)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleColor: '#ffffff',
+                            bodyColor: '#94a9c9',
+                            cornerRadius: 10,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' menit';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 5, font: { size: 9 }, color: '#94a3b8' },
+                            grid: { color: 'rgba(0,0,0,0.04)' } },
+                        x: { grid: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8' } }
+                    },
+                    interaction: { intersect: false, mode: 'index' },
+                }
+            });
+        }
+
+        function initKedisiplinanChart() {
+            const ctx = document.getElementById('kedisiplinanChart');
+            if (!ctx) return;
+            if (kedisiplinanChartInstance) kedisiplinanChartInstance.destroy();
+
+            kedisiplinanChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sangat Disiplin', 'Cukup Disiplin', 'Kurang Disiplin'],
+                    datasets: [{
+                        data: [62, 28, 10],
+                        backgroundColor: ['#15803d', '#b45309', '#b91c1c'],
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 10 },
+                                color: '#64748b',
+                                boxWidth: 12,
+                                padding: 10,
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleColor: '#ffffff',
+                            bodyColor: '#94a9c9',
+                            cornerRadius: 10,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed + '%';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%',
+                }
+            });
+        }
+
+        // ===== EXPORT BUTTONS =====
+        document.querySelectorAll('.export-btn, .export-btn-outline').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const text = this.textContent.trim();
+                showToast(`📊 ${text} - Fitur ekspor (simulasi)`);
+            });
+        });
+
+        // ===== INIT =====
+        renderKehadiranTable();
+        renderKeterlambatanTable();
+        renderTopTerlambat();
+        renderKedisiplinanTable();
+        renderRekapTable();
+        renderUnitSummary();
+        renderUnitCompare();
+
+        // Init charts (dengan delay untuk render)
+        setTimeout(() => {
+            initKehadiranChart();
+            initKeterlambatanChart();
+            initKedisiplinanChart();
+        }, 200);
+    </script>
+</body>
+</html>

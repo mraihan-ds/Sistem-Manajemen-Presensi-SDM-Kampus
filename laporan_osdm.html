@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laporan & Analisis · OSDM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .sidebar {
+            background: #0f1a2e;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a2a44;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3b5a82;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            color: #94a9c9;
+            transition: all 0.2s;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #ffffff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .badge-notif {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        .tab-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .tab-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .tab-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .status-badge {
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-hadir {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-izin {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-cuti {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .status-alpha {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .status-terlambat {
+            background: #fce4ec;
+            color: #c62828;
+        }
+        .filter-btn {
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .filter-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .filter-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .table-row {
+            transition: background 0.2s;
+        }
+        .table-row:hover {
+            background: #f8fafc;
+        }
+        .table-row td {
+            padding: 0.5rem 0.7rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.8rem;
+            vertical-align: middle;
+        }
+        .table-header th {
+            padding: 0.5rem 0.7rem;
+            text-align: left;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #64748b;
+            border-bottom: 2px solid #e9edf4;
+        }
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+        .export-btn {
+            padding: 0.4rem 1.2rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .export-btn:hover {
+            background: #14304e;
+        }
+        .export-btn-outline {
+            padding: 0.4rem 1.2rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: white;
+            color: #1e3a5f;
+            border: 1px solid #1e3a5f;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .export-btn-outline:hover {
+            background: #f0f5fe;
+        }
+        .unit-compare-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #e9edf4;
+        }
+        .unit-compare-item .bar {
+            height: 6px;
+            border-radius: 999px;
+            background: #e9edf4;
+            flex: 1;
+            overflow: hidden;
+        }
+        .unit-compare-item .bar .fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.8s ease;
+        }
+        .efficiency-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.25rem;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 40;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        @media (max-width: 640px) {
+            .tab-btn {
+                font-size: 0.7rem;
+                padding: 0.35rem 0.7rem;
+            }
+            .stat-card {
+                padding: 0.75rem 1rem;
+            }
+            .stat-card .text-2xl {
+                font-size: 1.2rem;
+            }
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .table-wrapper table {
+                min-width: 700px;
+            }
+            .filter-group {
+                flex-wrap: wrap;
+                gap: 0.3rem;
+            }
+            .filter-btn {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.6rem;
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .toast-notif {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f1a2e;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            max-width: 340px;
+            transform: translateY(120%);
+            transition: transform 0.4s ease;
+            font-size: 0.85rem;
+        }
+        .toast-notif.show {
+            transform: translateY(0);
+        }
+        .toast-notif.success {
+            border-left: 4px solid #15803d;
+        }
+        .toast-notif.info {
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2a6 6 0 0 0-6 6v3a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6z" />
+                        <path d="M12 18v3" />
+                        <path d="M8 21h8" />
+                        <path d="M6 11a6 6 0 0 0 12 0" />
+                        <path d="M8 8a4 4 0 0 1 8 0" />
+                        <path d="M10 13a2 2 0 1 1 4 0" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-lg leading-none">Presensi SDM</p>
+                    <p class="text-[#94a9c9] text-xs">Sistem Terintegrasi</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📊</span> Dashboard OSDM
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📋</span> Monitoring &amp; Presensi
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📝</span> Persetujuan
+            </a>
+            <a href="#" class="nav-link active flex items-center">
+                <span class="icon">📊</span> Laporan &amp; Analisis
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">🔔</span> Notifikasi
+                <span class="badge-notif">8</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <a href="#" class="nav-link flex items-center text-red-400 hover:text-red-300 hover:bg-red-950/30">
+                <span class="icon">🚪</span> Logout
+            </a>
+            <div class="mt-3 flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
+                <div>
+                    <p class="text-white text-sm font-medium">OSDM Utama</p>
+                    <p class="text-[#94a9c9] text-xs">Organisasi &amp; SDM</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-6">
+
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1a2e]">📊 Laporan &amp; Analisis</h1>
+                    <p class="text-sm text-gray-500">Hasilkan dan ekspor laporan kehadiran, disiplin, dan efisiensi kerja</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 shadow-sm border border-gray-200">
+                    <span class="text-xs text-gray-500">Periode:</span>
+                    <select class="text-xs border-0 bg-transparent font-medium text-[#0f1a2e] focus:outline-none" id="periodSelect">
+                        <option>Juli 2026</option>
+                        <option>Juni 2026</option>
+                        <option>Mei 2026</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">OSDM Utama</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === TABS === -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button class="tab-btn active" data-tab="harian">📅 Harian</button>
+            <button class="tab-btn" data-tab="bulanan">📆 Bulanan</button>
+            <button class="tab-btn" data-tab="tahunan">📈 Tahunan</button>
+            <button class="tab-btn" data-tab="efisiensi">⚡ Efisiensi Kerja</button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 1: LAPORAN HARIAN -->
+        <!-- ============================================================ -->
+        <div id="tab-harian" class="tab-content active fade-in">
+
+            <!-- Filter -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-3 filter-group">
+                    <input type="date" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600" value="2026-07-10" />
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                        <option>Akuntansi</option>
+                    </select>
+                    <button class="text-xs bg-[#1e3a5f] text-white px-4 py-1.5 rounded-lg hover:bg-[#14304e] transition-colors">Terapkan</button>
+                </div>
+                <div class="flex gap-2">
+                    <button class="export-btn-outline text-xs" onclick="showToast('📥 Export Excel - Laporan Harian', 'info')">📥 Excel</button>
+                    <button class="export-btn text-xs" onclick="showToast('📊 Export PDF - Laporan Harian', 'info')">📊 PDF</button>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">Total Pegawai</p>
+                    <p class="text-2xl font-bold text-[#0f1a2e]">150</p>
+                    <p class="text-xs text-gray-400">Hari ini, 10 Jul 2026</p>
+                </div>
+                <div class="stat-card text-center border-green-200 bg-green-50/50">
+                    <p class="text-xs text-green-600 font-medium">✅ Hadir</p>
+                    <p class="text-2xl font-bold text-green-700">112</p>
+                    <p class="text-xs text-green-500">74.7%</p>
+                </div>
+                <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                    <p class="text-xs text-yellow-600 font-medium">📝 Tidak Hadir</p>
+                    <p class="text-2xl font-bold text-yellow-700">38</p>
+                    <p class="text-xs text-yellow-500">Izin/Cuti/Alpha</p>
+                </div>
+                <div class="stat-card text-center border-orange-200 bg-orange-50/50">
+                    <p class="text-xs text-orange-600 font-medium">⏰ Terlambat</p>
+                    <p class="text-2xl font-bold text-orange-700">23</p>
+                    <p class="text-xs text-orange-500">12 menit rata-rata</p>
+                </div>
+            </div>
+
+            <!-- 3 Laporan dalam Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                <!-- Laporan Kehadiran -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4] flex items-center justify-between">
+                        <h4 class="font-semibold text-[#0f1a2e] text-xs">✅ Laporan Kehadiran</h4>
+                        <span class="text-xs text-gray-400">Hari Ini</span>
+                    </div>
+                    <div class="p-3 space-y-1.5">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Hadir</span><span class="font-bold text-green-700">112</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Izin</span><span class="font-bold text-yellow-700">18</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Cuti</span><span class="font-bold text-blue-700">12</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Alpha</span><span class="font-bold text-red-700">8</span></div>
+                        <div class="mt-2 pt-2 border-t border-gray-200 flex justify-between text-sm font-medium">
+                            <span>Persentase Kehadiran</span>
+                            <span class="text-[#1e3a5f]">74.7%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Laporan Keterlambatan -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4] flex items-center justify-between">
+                        <h4 class="font-semibold text-[#0f1a2e] text-xs">⏰ Laporan Keterlambatan</h4>
+                        <span class="text-xs text-gray-400">Hari Ini</span>
+                    </div>
+                    <div class="p-3 space-y-1.5">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Terlambat</span><span class="font-bold text-orange-700">23 pegawai</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Rata-rata Durasi</span><span class="font-bold text-orange-700">12 menit</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Durasi</span><span class="font-bold text-orange-700">276 menit</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Terlambat &gt; 30 menit</span><span class="font-bold text-red-700">7 pegawai</span></div>
+                        <div class="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-400">
+                            Top: Budi Santoso (25 menit)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Laporan Ketidakhadiran -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4] flex items-center justify-between">
+                        <h4 class="font-semibold text-[#0f1a2e] text-xs">❌ Laporan Ketidakhadiran</h4>
+                        <span class="text-xs text-gray-400">Hari Ini</span>
+                    </div>
+                    <div class="p-3 space-y-1.5">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Tidak Hadir</span><span class="font-bold text-red-700">38</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Izin</span><span class="font-bold text-yellow-700">18</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Cuti</span><span class="font-bold text-blue-700">12</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Alpha (Tanpa Keterangan)</span><span class="font-bold text-red-700">8</span></div>
+                        <div class="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-400">
+                            Alpha: Andi Pratama, Rina Sari, Doni Saputra, ...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Detail Harian -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📋 Detail Kehadiran Harian</h3>
+                    <span class="text-xs text-gray-400">10 Juli 2026</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Unit</th>
+                                <th>Jam Masuk</th>
+                                <th>Jam Keluar</th>
+                                <th>Status</th>
+                                <th>Keterlambatan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="harianTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 2: LAPORAN BULANAN -->
+        <!-- ============================================================ -->
+        <div id="tab-bulanan" class="tab-content fade-in">
+
+            <!-- Filter -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-3 filter-group">
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Juli 2026</option>
+                        <option>Juni 2026</option>
+                        <option>Mei 2026</option>
+                        <option>April 2026</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>2026</option>
+                        <option>2025</option>
+                        <option>2024</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                        <option>Akuntansi</option>
+                    </select>
+                    <button class="text-xs bg-[#1e3a5f] text-white px-4 py-1.5 rounded-lg hover:bg-[#14304e] transition-colors">Terapkan</button>
+                </div>
+                <div class="flex gap-2">
+                    <button class="export-btn-outline text-xs" onclick="showToast('📥 Export Excel - Laporan Bulanan', 'info')">📥 Excel</button>
+                    <button class="export-btn text-xs" onclick="showToast('📊 Export PDF - Laporan Bulanan', 'info')">📊 PDF</button>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">Bulan</p>
+                    <p class="text-xl font-bold text-[#0f1a2e]">Juli 2026</p>
+                    <p class="text-xs text-gray-400">22 hari kerja</p>
+                </div>
+                <div class="stat-card text-center border-green-200 bg-green-50/50">
+                    <p class="text-xs text-green-600 font-medium">Rata-rata Kehadiran</p>
+                    <p class="text-2xl font-bold text-green-700">74.7%</p>
+                    <p class="text-xs text-green-500">↑ 2.1% dari bulan lalu</p>
+                </div>
+                <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                    <p class="text-xs text-yellow-600 font-medium">Total Izin</p>
+                    <p class="text-2xl font-bold text-yellow-700">18</p>
+                    <p class="text-xs text-yellow-500">12 disetujui</p>
+                </div>
+                <div class="stat-card text-center border-blue-200 bg-blue-50/50">
+                    <p class="text-xs text-blue-600 font-medium">Total Cuti</p>
+                    <p class="text-2xl font-bold text-blue-700">12</p>
+                    <p class="text-xs text-blue-500">8 disetujui</p>
+                </div>
+            </div>
+
+            <!-- 4 Rekap dalam Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- Rekap Kehadiran -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4]">
+                        <h4 class="font-semibold text-[#0f1a2e] text-sm">📋 Rekap Kehadiran Bulanan</h4>
+                    </div>
+                    <div class="p-3 space-y-1.5">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Hari Kerja</span><span class="font-bold text-[#0f1a2e]">22</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Kehadiran</span><span class="font-bold text-green-700">2.464</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Rata-rata Harian</span><span class="font-bold text-[#0f1a2e]">112</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Persentase Kehadiran</span><span class="font-bold text-[#1e3a5f]">74.7%</span></div>
+                    </div>
+                </div>
+
+                <!-- Rekap Izin -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4]">
+                        <h4 class="font-semibold text-[#0f1a2e] text-sm">📝 Rekap Izin Bulanan</h4>
+                    </div>
+                    <div class="p-3 space-y-1.5">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Izin</span><span class="font-bold text-yellow-700">18</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Disetujui</span><span class="font-bold text-green-700">12</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Menunggu</span><span class="font-bold text-yellow-600">4</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Ditolak</span><span class="font-bold text-red-700">2</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Izin Terbanyak</span><span class="font-bold text-[#0f1a2e]">Dinas Luar (6)</span></div>
+                    </div>
+                </div>
+
+                <!-- Rekap Cuti -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4]">
+                        <h4 class="font-semibold text-[#0f1a2e] text-sm">🏖️ Rekap Cuti Bulanan</h4>
+                    </div>
+                    <div class="p-3 space-y-1.5">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Cuti</span><span class="font-bold text-blue-700">12</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Disetujui</span><span class="font-bold text-green-700">8</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Menunggu</span><span class="font-bold text-yellow-600">3</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Ditolak</span><span class="font-bold text-red-700">1</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Hari Cuti</span><span class="font-bold text-[#0f1a2e]">45 hari</span></div>
+                    </div>
+                </div>
+
+                <!-- Rekap Jam Kerja -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4]">
+                        <h4 class="font-semibold text-[#0f1a2e] text-sm">⏱️ Rekap Jam Kerja Bulanan</h4>
+                    </div>
+                    <div class="p-3 space-y-1.5">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Total Jam Kerja</span><span class="font-bold text-[#0f1a2e]">18.736 jam</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Rata-rata Harian</span><span class="font-bold text-[#0f1a2e]">7.6 jam</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Rata-rata per Pegawai</span><span class="font-bold text-[#0f1a2e]">124.9 jam</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600">Efektivitas</span><span class="font-bold text-[#1e3a5f]">85.3%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Rekap Bulanan -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📊 Rekap Bulanan per Pegawai</h3>
+                    <span class="text-xs text-gray-400">Juli 2026</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Unit</th>
+                                <th>Total Hari</th>
+                                <th>Hadir</th>
+                                <th>Izin</th>
+                                <th>Cuti</th>
+                                <th>Alpha</th>
+                                <th>Jam Kerja</th>
+                                <th>% Kehadiran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulananTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 3: LAPORAN TAHUNAN -->
+        <!-- ============================================================ -->
+        <div id="tab-tahunan" class="tab-content fade-in">
+
+            <!-- Filter -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-3 filter-group">
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>2026</option>
+                        <option>2025</option>
+                        <option>2024</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                        <option>Akuntansi</option>
+                    </select>
+                    <button class="text-xs bg-[#1e3a5f] text-white px-4 py-1.5 rounded-lg hover:bg-[#14304e] transition-colors">Terapkan</button>
+                </div>
+                <div class="flex gap-2">
+                    <button class="export-btn-outline text-xs" onclick="showToast('📥 Export Excel - Laporan Tahunan', 'info')">📥 Excel</button>
+                    <button class="export-btn text-xs" onclick="showToast('📊 Export PDF - Laporan Tahunan', 'info')">📊 PDF</button>
+                </div>
+            </div>
+
+            <!-- 3 Stat Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">📊 Statistik Kehadiran</p>
+                    <p class="text-2xl font-bold text-[#0f1a2e]">72.3%</p>
+                    <p class="text-xs text-gray-400">Rata-rata tahunan</p>
+                    <div class="mt-2 flex justify-center gap-4 text-xs">
+                        <span class="text-green-600">↑ Tertinggi: 78% (Mar)</span>
+                        <span class="text-red-600">↓ Terendah: 65% (Des)</span>
+                    </div>
+                </div>
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">📈 Statistik Disiplin</p>
+                    <div class="flex justify-center gap-4 text-sm mt-1">
+                        <span class="text-green-700 font-bold">62%</span>
+                        <span class="text-yellow-700 font-bold">28%</span>
+                        <span class="text-red-700 font-bold">10%</span>
+                    </div>
+                    <div class="flex justify-center gap-4 text-xs text-gray-500">
+                        <span>Sangat Disiplin</span>
+                        <span>Cukup Disiplin</span>
+                        <span>Kurang Disiplin</span>
+                    </div>
+                </div>
+                <div class="stat-card text-center">
+                    <p class="text-xs text-gray-500 font-medium">🏢 Statistik Unit Kerja</p>
+                    <p class="text-2xl font-bold text-[#0f1a2e]">12</p>
+                    <p class="text-xs text-gray-400">Unit kerja aktif</p>
+                    <div class="mt-1 text-xs text-gray-500">
+                        Tertinggi: Akuntansi (81.8%)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Statistik Tahunan -->
+            <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-[#e9edf4] flex items-center justify-between">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm">📊 Statistik Tahunan per Unit Kerja</h3>
+                    <span class="text-xs text-gray-400">Tahun 2026</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="w-full">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Unit Kerja</th>
+                                <th>Total Pegawai</th>
+                                <th>Rata-rata Kehadiran</th>
+                                <th>Total Alpha</th>
+                                <th>Rata-rata Disiplin</th>
+                                <th>Efektivitas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tahunanTableBody">
+                            <!-- diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB 4: LAPORAN EFISIENSI KERJA -->
+        <!-- ============================================================ -->
+        <div id="tab-efisiensi" class="tab-content fade-in">
+
+            <!-- Filter -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex flex-wrap items-center gap-3 filter-group">
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Juli 2026</option>
+                        <option>Juni 2026</option>
+                        <option>Mei 2026</option>
+                    </select>
+                    <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600">
+                        <option>Semua Unit</option>
+                        <option>Teknik Informatika</option>
+                        <option>Sistem Informasi</option>
+                        <option>Manajemen</option>
+                        <option>Akuntansi</option>
+                    </select>
+                    <button class="text-xs bg-[#1e3a5f] text-white px-4 py-1.5 rounded-lg hover:bg-[#14304e] transition-colors">Terapkan</button>
+                </div>
+                <div class="flex gap-2">
+                    <button class="export-btn-outline text-xs" onclick="showToast('📥 Export Excel - Laporan Efisiensi', 'info')">📥 Excel</button>
+                    <button class="export-btn text-xs" onclick="showToast('📊 Export PDF - Laporan Efisiensi', 'info')">📊 PDF</button>
+                </div>
+            </div>
+
+            <!-- Chart Efisiensi -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="efficiency-card">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm mb-3">📊 Grafik Efisiensi Kerja</h3>
+                    <div class="chart-container">
+                        <canvas id="efisiensiChart"></canvas>
+                    </div>
+                    <div class="flex justify-center gap-6 mt-3 text-xs">
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#1e3a5f]"></span> Kehadiran</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#f59e0b]"></span> Keterlambatan</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#ef4444]"></span> Alpha</span>
+                    </div>
+                </div>
+
+                <!-- Perbandingan Unit -->
+                <div class="efficiency-card">
+                    <h3 class="font-semibold text-[#0f1a2e] text-sm mb-3">🏢 Perbandingan Antar Unit Kerja</h3>
+                    <div class="space-y-2" id="unitCompareList">
+                        <!-- diisi JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Efisiensi per Unit & Pegawai -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Efisiensi per Unit -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4]">
+                        <h4 class="font-semibold text-[#0f1a2e] text-sm">🏢 Efisiensi per Unit Kerja</h4>
+                    </div>
+                    <div class="p-3 space-y-2" id="efisiensiUnitList">
+                        <!-- diisi JS -->
+                    </div>
+                </div>
+
+                <!-- Efisiensi per Pegawai -->
+                <div class="bg-white rounded-2xl border border-[#e9edf4] shadow-sm overflow-hidden">
+                    <div class="px-3 py-2 border-b border-[#e9edf4] flex items-center justify-between">
+                        <h4 class="font-semibold text-[#0f1a2e] text-sm">👤 Efisiensi per Pegawai (Top 5)</h4>
+                        <span class="text-xs text-gray-400">Berdasarkan jam kerja</span>
+                    </div>
+                    <div class="p-3 space-y-2" id="efisiensiPegawaiList">
+                        <!-- diisi JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-[0.6rem] text-gray-400 border-t border-gray-200 pt-4">
+            <span>SRS · Sistem Manajemen Presensi SDM Kampus</span>
+            <span class="mx-1.5">•</span>
+            <span>v1.0</span>
+            <span class="mx-1.5">•</span>
+            <span>Laporan &amp; Analisis</span>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast-notif" id="toastNotif"></div>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== TOAST =====
+        let toastTimeout;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotif');
+            toast.textContent = message;
+            toast.className = 'toast-notif ' + type;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // ===== TABS =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-' + tabId).classList.add('active');
+
+                setTimeout(() => {
+                    if (tabId === 'efisiensi') initEfisiensiChart();
+                }, 100);
+            });
+        });
+
+        // ===== DATA DUMMY =====
+        const harianData = [
+            { name: 'Budi Santoso', unit: 'Teknik Informatika', masuk: '07:45', keluar: '16:00', status: 'Hadir',
+                terlambat: 'Tepat Waktu' },
+            { name: 'Siti Rahayu', unit: 'Sistem Informasi', masuk: '08:15', keluar: '16:30', status: 'Hadir',
+                terlambat: 'Terlambat 15m' },
+            { name: 'Agus Wijaya', unit: 'Manajemen', masuk: '08:30', keluar: '16:15', status: 'Hadir',
+                terlambat: 'Terlambat 10m' },
+            { name: 'Dewi Lestari', unit: 'Akuntansi', masuk: '—', keluar: '—', status: 'Izin', terlambat: '—' },
+            { name: 'Rudi Hermawan', unit: 'Teknik Elektro', masuk: '—', keluar: '—', status: 'Cuti', terlambat: '—' },
+            { name: 'Andi Pratama', unit: 'Manajemen', masuk: '—', keluar: '—', status: 'Alpha', terlambat: '—' },
+            { name: 'Rina Sari', unit: 'Akuntansi', masuk: '—', keluar: '—', status: 'Alpha', terlambat: '—' },
+            { name: 'Doni Saputra', unit: 'Teknik Informatika', masuk: '07:50', keluar: '16:00', status: 'Hadir',
+                terlambat: 'Tepat Waktu' },
+            { name: 'Maya Anggraini', unit: 'Sistem Informasi', masuk: '08:00', keluar: '16:00', status: 'Hadir',
+                terlambat: 'Tepat Waktu' },
+            { name: 'Fajar Kurniawan', unit: 'Teknik Elektro', masuk: '08:45', keluar: '16:30', status: 'Hadir',
+                terlambat: 'Terlambat 10m' }
+        ];
+
+        const bulananData = [
+            { name: 'Budi Santoso', unit: 'Teknik Informatika', total: 22, hadir: 18, izin: 2, cuti: 1, alpha: 1,
+                jamKerja: 146, persentase: 82 },
+            { name: 'Siti Rahayu', unit: 'Sistem Informasi', total: 22, hadir: 19, izin: 1, cuti: 2, alpha: 0,
+                jamKerja: 155, persentase: 86 },
+            { name: 'Agus Wijaya', unit: 'Manajemen', total: 22, hadir: 15, izin: 3, cuti: 1, alpha: 3, jamKerja: 122,
+                persentase: 68 },
+            { name: 'Dewi Lestari', unit: 'Akuntansi', total: 22, hadir: 17, izin: 3, cuti: 0, alpha: 2, jamKerja: 138,
+                persentase: 77 },
+            { name: 'Rudi Hermawan', unit: 'Teknik Elektro', total: 22, hadir: 14, izin: 2, cuti: 3, alpha: 3,
+                jamKerja: 114, persentase: 64 },
+            { name: 'Andi Pratama', unit: 'Manajemen', total: 22, hadir: 12, izin: 4, cuti: 0, alpha: 6, jamKerja: 98,
+                persentase: 55 },
+            { name: 'Rina Sari', unit: 'Akuntansi', total: 22, hadir: 16, izin: 3, cuti: 2, alpha: 1, jamKerja: 130,
+                persentase: 73 },
+            { name: 'Doni Saputra', unit: 'Teknik Informatika', total: 22, hadir: 20, izin: 0, cuti: 2, alpha: 0,
+                jamKerja: 162, persentase: 91 },
+            { name: 'Maya Anggraini', unit: 'Sistem Informasi', total: 22, hadir: 15, izin: 4, cuti: 1, alpha: 2,
+                jamKerja: 122, persentase: 68 },
+            { name: 'Fajar Kurniawan', unit: 'Teknik Elektro', total: 22, hadir: 13, izin: 3, cuti: 3, alpha: 3,
+                jamKerja: 106, persentase: 59 }
+        ];
+
+        const tahunanData = [
+            { unit: 'Teknik Informatika', total: 28, kehadiran: 76.2, alpha: 18, disiplin: 'Sangat Disiplin',
+            efektivitas: 87.5 },
+            { unit: 'Sistem Informasi', total: 25, kehadiran: 78.5, alpha: 14, disiplin: 'Sangat Disiplin',
+            efektivitas: 88.2 },
+            { unit: 'Manajemen', total: 30, kehadiran: 68.3, alpha: 32, disiplin: 'Cukup Disiplin', efektivitas: 76.8 },
+            { unit: 'Akuntansi', total: 22, kehadiran: 79.1, alpha: 12, disiplin: 'Sangat Disiplin', efektivitas: 89.4 },
+            { unit: 'Teknik Elektro', total: 20, kehadiran: 73.6, alpha: 20, disiplin: 'Cukup Disiplin', efektivitas: 81.2 },
+            { unit: 'Hukum', total: 25, kehadiran: 62.8, alpha: 38, disiplin: 'Kurang Disiplin', efektivitas: 70.5 }
+        ];
+
+        const unitCompareData = [
+            { name: 'Akuntansi', kehadiran: 79.1, terlambat: 8.2, alpha: 12 },
+            { name: 'Sistem Informasi', kehadiran: 78.5, terlambat: 9.5, alpha: 14 },
+            { name: 'Teknik Informatika', kehadiran: 76.2, terlambat: 10.8, alpha: 18 },
+            { name: 'Teknik Elektro', kehadiran: 73.6, terlambat: 12.4, alpha: 20 },
+            { name: 'Manajemen', kehadiran: 68.3, terlambat: 14.6, alpha: 32 },
+            { name: 'Hukum', kehadiran: 62.8, terlambat: 18.2, alpha: 38 }
+        ];
+
+        const efisiensiUnitData = [
+            { name: 'Akuntansi', jamKerja: 8.2, efisiensi: 92 },
+            { name: 'Sistem Informasi', jamKerja: 8.0, efisiensi: 89 },
+            { name: 'Teknik Informatika', jamKerja: 7.8, efisiensi: 87 },
+            { name: 'Teknik Elektro', jamKerja: 7.4, efisiensi: 82 },
+            { name: 'Manajemen', jamKerja: 7.0, efisiensi: 78 },
+            { name: 'Hukum', jamKerja: 6.5, efisiensi: 72 }
+        ];
+
+        const efisiensiPegawaiData = [
+            { name: 'Doni Saputra', unit: 'Teknik Informatika', jamKerja: 8.5, efisiensi: 95 },
+            { name: 'Dr. Budi Santoso', unit: 'Teknik Informatika', jamKerja: 8.3, efisiensi: 92 },
+            { name: 'Dr. Siti Rahayu', unit: 'Sistem Informasi', jamKerja: 8.2, efisiensi: 91 },
+            { name: 'Dewi Lestari', unit: 'Akuntansi', jamKerja: 8.1, efisiensi: 90 },
+            { name: 'Maya Anggraini', unit: 'Sistem Informasi', jamKerja: 7.9, efisiensi: 88 }
+        ];
+
+        // ===== RENDER TABEL HARIAN =====
+        function renderHarianTable() {
+            const tbody = document.getElementById('harianTableBody');
+            const statusMap = {
+                'Hadir': 'status-hadir',
+                'Izin': 'status-izin',
+                'Cuti': 'status-cuti',
+                'Alpha': 'status-alpha'
+            };
+
+            tbody.innerHTML = harianData.map(p => `
+                    <tr class="table-row">
+                        <td class="font-medium text-[#0f1a2e]">${p.name}</td>
+                        <td class="text-gray-600">${p.unit}</td>
+                        <td class="text-gray-600">${p.masuk}</td>
+                        <td class="text-gray-600">${p.keluar}</td>
+                        <td><span class="status-badge ${statusMap[p.status] || ''}">${p.status}</span></td>
+                        <td class="${p.terlambat.includes('Terlambat') ? 'text-red-600 font-medium' : 'text-green-600'}">${p.terlambat}</td>
+                    </tr>
+                `).join('');
+        }
+
+        // ===== RENDER TABEL BULANAN =====
+        function renderBulananTable() {
+            const tbody = document.getElementById('bulananTableBody');
+            tbody.innerHTML = bulananData.map(p => `
+                    <tr class="table-row">
+                        <td class="font-medium text-[#0f1a2e]">${p.name}</td>
+                        <td class="text-gray-600">${p.unit}</td>
+                        <td class="text-center text-gray-600">${p.total}</td>
+                        <td class="text-center text-green-700 font-medium">${p.hadir}</td>
+                        <td class="text-center text-yellow-700 font-medium">${p.izin}</td>
+                        <td class="text-center text-blue-700 font-medium">${p.cuti}</td>
+                        <td class="text-center text-red-700 font-medium">${p.alpha}</td>
+                        <td class="text-center text-[#0f1a2e] font-medium">${p.jamKerja}</td>
+                        <td class="text-center font-bold text-[#1e3a5f]">${p.persentase}%</td>
+                    </tr>
+                `).join('');
+        }
+
+        // ===== RENDER TABEL TAHUNAN =====
+        function renderTahunanTable() {
+            const tbody = document.getElementById('tahunanTableBody');
+            const disiplinMap = {
+                'Sangat Disiplin': 'status-hadir',
+                'Cukup Disiplin': 'status-izin',
+                'Kurang Disiplin': 'status-alpha'
+            };
+
+            tbody.innerHTML = tahunanData.map(p => `
+                    <tr class="table-row">
+                        <td class="font-medium text-[#0f1a2e]">${p.unit}</td>
+                        <td class="text-center text-gray-600">${p.total}</td>
+                        <td class="text-center font-bold text-[#1e3a5f]">${p.kehadiran}%</td>
+                        <td class="text-center text-red-700 font-medium">${p.alpha}</td>
+                        <td class="text-center"><span class="status-badge ${disiplinMap[p.disiplin] || ''}">${p.disiplin}</span></td>
+                        <td class="text-center font-medium text-[#0f1a2e]">${p.efektivitas}%</td>
+                    </tr>
+                `).join('');
+        }
+
+        // ===== RENDER UNIT COMPARE =====
+        function renderUnitCompare() {
+            const container = document.getElementById('unitCompareList');
+            const sorted = [...unitCompareData].sort((a, b) => b.kehadiran - a.kehadiran);
+            const max = sorted[0]?.kehadiran || 100;
+
+            container.innerHTML = sorted.map(u => `
+                    <div class="unit-compare-item">
+                        <span class="text-xs font-medium text-[#0f1a2e] w-20 truncate">${u.name}</span>
+                        <div class="bar">
+                            <div class="fill" style="width: ${(u.kehadiran / max) * 100}%; background: #1e3a5f;"></div>
+                        </div>
+                        <span class="text-xs font-bold text-[#0f1a2e] w-8 text-right">${u.kehadiran}%</span>
+                        <span class="text-xs text-gray-400 w-16 text-right">${u.terlambat}% terlambat</span>
+                        <span class="text-xs text-red-400 w-12 text-right">${u.alpha} α</span>
+                    </div>
+                `).join('');
+        }
+
+        // ===== RENDER EFISIENSI UNIT =====
+        function renderEfisiensiUnit() {
+            const container = document.getElementById('efisiensiUnitList');
+            const sorted = [...efisiensiUnitData].sort((a, b) => b.efisiensi - a.efisiensi);
+
+            container.innerHTML = sorted.map(u => `
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                        <div>
+                            <p class="text-sm font-medium text-[#0f1a2e]">${u.name}</p>
+                            <p class="text-xs text-gray-400">${u.jamKerja} jam/hari</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-[#1e3a5f]">${u.efisiensi}%</span>
+                            <div class="w-24 h-1.5 bg-gray-200 rounded-full mt-1">
+                                <div class="h-1.5 bg-[#1e3a5f] rounded-full" style="width:${u.efisiensi}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // ===== RENDER EFISIENSI PEGAWAI =====
+        function renderEfisiensiPegawai() {
+            const container = document.getElementById('efisiensiPegawaiList');
+            const medals = ['🥇', '🥈', '🥉', '4', '5'];
+
+            container.innerHTML = efisiensiPegawaiData.map((p, i) => `
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">${medals[i]}</span>
+                            <div>
+                                <p class="text-sm font-medium text-[#0f1a2e]">${p.name}</p>
+                                <p class="text-xs text-gray-400">${p.unit}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-bold text-[#1e3a5f]">${p.efisiensi}%</span>
+                            <p class="text-xs text-gray-400">${p.jamKerja} jam/hari</p>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // ===== CHART EFISIENSI =====
+        let efisiensiChartInstance = null;
+
+        function initEfisiensiChart() {
+            const ctx = document.getElementById('efisiensiChart');
+            if (!ctx) return;
+            if (efisiensiChartInstance) efisiensiChartInstance.destroy();
+
+            efisiensiChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Teknik Informatika', 'Sistem Informasi', 'Manajemen', 'Akuntansi', 'Teknik Elektro', 'Hukum'],
+                    datasets: [{
+                        label: 'Kehadiran (%)',
+                        data: [76.2, 78.5, 68.3, 79.1, 73.6, 62.8],
+                        backgroundColor: '#1e3a5f',
+                        borderRadius: 4,
+                    }, {
+                        label: 'Keterlambatan (%)',
+                        data: [10.8, 9.5, 14.6, 8.2, 12.4, 18.2],
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4,
+                    }, {
+                        label: 'Alpha (%)',
+                        data: [18, 14, 32, 12, 20, 38],
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleColor: '#ffffff',
+                            bodyColor: '#94a9c9',
+                            cornerRadius: 10,
+                            padding: 10,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { font: { size: 9 }, color: '#94a3b8', callback: function(v) { return v + '%'; } },
+                            grid: { color: 'rgba(0,0,0,0.04)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 8 }, color: '#94a3b8', maxRotation: 30 }
+                        }
+                    },
+                    interaction: { intersect: false, mode: 'index' },
+                }
+            });
+        }
+
+        // ===== INIT =====
+        renderHarianTable();
+        renderBulananTable();
+        renderTahunanTable();
+        renderUnitCompare();
+        renderEfisiensiUnit();
+        renderEfisiensiPegawai();
+
+        setTimeout(() => {
+            initEfisiensiChart();
+        }, 200);
+    </script>
+</body>
+</html>
