@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoring & Presensi - Sistem Manajemen Presensi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            background: #0f1a2e;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        #sidebar.hidden-sidebar {
+            transform: translateX(-100%);
+        }
+
+        #sidebar .logo-area {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #sidebar .logo-area h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        #sidebar .logo-area span {
+            color: #94a9c9;
+            font-size: 0.7rem;
+            font-weight: 400;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1rem;
+            margin: 0.2rem 0.75rem;
+            border-radius: 10px;
+            color: #94a9c9;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            gap: 12px;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #fff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #fff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        .nav-link .badge-notif {
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.6rem;
+            border-radius: 999px;
+            padding: 0.1rem 0.6rem;
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        .sidebar-user {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: auto;
+            position: sticky;
+            bottom: 0;
+            background: #0f1a2e;
+        }
+        .sidebar-user .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .sidebar-user .info .name {
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .sidebar-user .info .role {
+            color: #94a9c9;
+            font-size: 0.7rem;
+        }
+
+        /* ===== OVERLAY ===== */
+        #sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 40;
+            display: none;
+        }
+        #sidebar-overlay.show {
+            display: block;
+        }
+
+        /* ===== MAIN ===== */
+        #main-content {
+            margin-left: 260px;
+            padding: 1.5rem;
+            min-height: 100vh;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0 1.5rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .top-bar .page-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f1a2e;
+        }
+        .top-bar .page-title p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        .top-bar .page-title .unit-badge {
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 0.15rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .top-bar-actions .notif-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+        .top-bar-actions .notif-bell .badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.55rem;
+            border-radius: 999px;
+            padding: 0.1rem 0.5rem;
+            font-weight: 700;
+        }
+        .top-bar-actions .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #0f1a2e;
+            background: none;
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .card-header h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #0f1a2e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ===== STAT CARD ===== */
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            transition: all 0.25s ease;
+        }
+        .stat-card:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        .stat-card .icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-card .number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #0f1a2e;
+            line-height: 1.2;
+        }
+        .stat-card .label {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* ===== STATUS BADGE ===== */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            gap: 4px;
+        }
+        .badge-status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+        .badge-status.hadir {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-status.hadir .dot {
+            background: #15803d;
+        }
+        .badge-status.izin {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .badge-status.izin .dot {
+            background: #b45309;
+        }
+        .badge-status.cuti {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .badge-status.cuti .dot {
+            background: #1d4ed8;
+        }
+        .badge-status.alpha {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-status.alpha .dot {
+            background: #b91c1c;
+        }
+        .badge-status.terlambat {
+            background: #ffedd5;
+            color: #b45309;
+        }
+        .badge-status.terlambat .dot {
+            background: #b45309;
+        }
+        .badge-status.fingerprint {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .badge-status.fingerprint .dot {
+            background: #64748b;
+        }
+        .badge-status.manual {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+        .badge-status.manual .dot {
+            background: #7c3aed;
+        }
+
+        /* ===== BUTTON ===== */
+        .btn-primary {
+            background: #1e3a5f;
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-primary:hover {
+            background: #14304e;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            border: 1px solid #e9edf4;
+            color: #0f1a2e;
+            padding: 0.4rem 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover {
+            background: #f1f5f9;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        .table-wrap table {
+            width: 100%;
+            font-size: 0.85rem;
+        }
+        .table-wrap table thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e9edf4;
+            white-space: nowrap;
+        }
+        .table-wrap table tbody td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid #e9edf4;
+            color: #0f1a2e;
+            vertical-align: middle;
+        }
+        .table-wrap table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* ===== FORM ===== */
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 0.2rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.4rem 0.7rem;
+            border: 1px solid #e9edf4;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            background: #fff;
+            transition: all 0.2s;
+            color: #0f1a2e;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
+        }
+        select.form-control {
+            appearance: auto;
+        }
+
+        /* ===== FILTER ===== */
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+        .filter-group .form-group {
+            margin-bottom: 0;
+            min-width: 120px;
+        }
+        .filter-group .form-group label {
+            font-size: 0.7rem;
+            margin-bottom: 0.1rem;
+        }
+        .filter-group .form-control {
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+        }
+
+        /* ===== TABS ===== */
+        .tab-container {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid #e9edf4;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 0.5rem 1.25rem;
+            border: none;
+            background: transparent;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab-btn.active {
+            color: #1e3a5f;
+            border-bottom-color: #1e3a5f;
+        }
+        .tab-btn:hover {
+            color: #0f1a2e;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ===== CHART ===== */
+        .chart-container {
+            position: relative;
+            height: 220px;
+            width: 100%;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            #main-content {
+                margin-left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+            #sidebar-overlay.show {
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #main-content {
+                padding: 1rem;
+            }
+            .top-bar .page-title h2 {
+                font-size: 1.2rem;
+            }
+            .stat-card .number {
+                font-size: 1.4rem;
+            }
+            .table-wrap table {
+                font-size: 0.7rem;
+            }
+            .table-wrap table thead th,
+            .table-wrap table tbody td {
+                padding: 0.3rem 0.4rem;
+            }
+            .filter-group .form-group {
+                min-width: 100%;
+            }
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: #0f1a2e;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #1e3a5f;
+            border-radius: 4px;
+        }
+
+        .flex-center {
+            display: flex;
+            align-items: center;
+        }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .text-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+
+        .badge-role {
+            display: inline-block;
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR OVERLAY ===== -->
+    <div id="sidebar-overlay"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside id="sidebar">
+        <div class="logo-area">
+            <h1>📋 Presensi</h1>
+            <span>Sistem Manajemen SDM Kampus</span>
+        </div>
+
+        <nav style="padding: 0.75rem 0 0 0;">
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📋</span> Pengajuan & Persetujuan
+                <span class="badge-notif">5</span>
+            </a>
+            <a class="nav-link active" onclick="closeSidebar()">
+                <span class="icon">📊</span> Monitoring & Presensi
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">👥</span> Dosen
+            </a>
+            <a class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📄</span> Laporan
+            </a>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="avatar">AF</div>
+            <div class="info">
+                <div class="name">Dr. Ahmad Fauzi, M.T.</div>
+                <div class="role">Kaprodi Teknik Informatika</div>
+            </div>
+            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="flex-center gap-3">
+                <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">☰</button>
+                <div class="page-title">
+                    <h2>
+                        Monitoring & Presensi
+                        <span class="unit-badge">🏫 Teknik Informatika</span>
+                    </h2>
+                    <p>Pantau kehadiran dan keterlambatan dosen di program studi Anda</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div class="notif-bell" title="Notifikasi">
+                    🔔
+                    <span class="badge">6</span>
+                </div>
+                <div class="user-avatar" title="Dr. Ahmad Fauzi">AF</div>
+            </div>
+        </div>
+
+        <!-- ===== TABS ===== -->
+        <div class="card" style="padding-bottom:0.5rem;">
+            <div class="tab-container">
+                <button class="tab-btn active" data-tab="tab-presensi">📋 Rekap Kehadiran</button>
+                <button class="tab-btn" data-tab="tab-terlambat">⏰ Monitoring Keterlambatan</button>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ===== TAB 1: REKAP KEHADIRAN ===== -->
+        <!-- ============================================================ -->
+        <div id="tab-presensi" class="tab-content active" style="margin-top:1.5rem;">
+
+            <!-- STAT CARDS -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#dbeafe;color:#1d4ed8;">👨‍🏫</div>
+                    <div>
+                        <div class="number" id="kehadiranTotalDosen">24</div>
+                        <div class="label">Total Dosen</div>
+                    </div>
+                </div>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#dcfce7;color:#15803d;">✅</div>
+                    <div>
+                        <div class="number" id="kehadiranTotalHadir">142</div>
+                        <div class="label">Total Hadir</div>
+                    </div>
+                </div>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#fef3c7;color:#b45309;">📋</div>
+                    <div>
+                        <div class="number" id="kehadiranTotalIzin">23</div>
+                        <div class="label">Total Izin</div>
+                    </div>
+                </div>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#dbeafe;color:#1d4ed8;">🏖️</div>
+                    <div>
+                        <div class="number" id="kehadiranTotalCuti">12</div>
+                        <div class="label">Total Cuti</div>
+                    </div>
+                </div>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#fee2e2;color:#b91c1c;">❌</div>
+                    <div>
+                        <div class="number" id="kehadiranTotalAlpha">10</div>
+                        <div class="label">Total Alpha</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER -->
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:flex-end;">
+                    <div class="filter-group">
+                        <div class="form-group">
+                            <label>Periode</label>
+                            <select class="form-control" id="presensiPeriode" onchange="updatePresensi()">
+                                <option value="harian">Harian</option>
+                                <option value="bulanan" selected>Bulanan</option>
+                                <option value="tahunan">Tahunan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal</label>
+                            <input type="date" class="form-control" id="presensiDate" value="2026-07-11" onchange="updatePresensi()">
+                        </div>
+                        <div class="form-group">
+                            <label>Bulan</label>
+                            <select class="form-control" id="presensiBulan" onchange="updatePresensi()">
+                                <option value="1">Januari</option>
+                                <option value="2">Februari</option>
+                                <option value="3">Maret</option>
+                                <option value="4">April</option>
+                                <option value="5">Mei</option>
+                                <option value="6">Juni</option>
+                                <option value="7" selected>Juli</option>
+                                <option value="8">Agustus</option>
+                                <option value="9">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tahun</label>
+                            <select class="form-control" id="presensiTahun" onchange="updatePresensi()">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026" selected>2026</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="updatePresensi()">🔍 Tampilkan</button>
+                    </div>
+                    <span style="font-size:0.8rem;color:#94a3b8;" id="presensiTotalDisplay">Total kehadiran: <strong>187</strong> data</span>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📋 Rekap Kehadiran Dosen</h3>
+                    <span style="font-size:0.85rem;color:#64748b;">Total: <strong id="kehadiranCountDisplay">18</strong> dosen</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nama Dosen</th>
+                                <th>Status</th>
+                                <th>Jam Masuk</th>
+                                <th>Jam Keluar</th>
+                                <th>Sumber Data</th>
+                                <th>% Kehadiran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presensiTableBody">
+                            <!-- Data via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                    <span style="font-size:0.8rem;color:#94a3b8;">Menampilkan 1-18 dari 18 data</span>
+                    <div style="display:flex;gap:0.3rem;">
+                        <button class="btn-secondary" style="padding:0.2rem 0.6rem;font-size:0.7rem;">«</button>
+                        <button class="btn-primary" style="padding:0.2rem 0.6rem;font-size:0.7rem;">1</button>
+                        <button class="btn-secondary" style="padding:0.2rem 0.6rem;font-size:0.7rem;">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- ===== TAB 2: MONITORING KETERLAMBATAN ===== -->
+        <!-- ============================================================ -->
+        <div id="tab-terlambat" class="tab-content" style="margin-top:1.5rem;">
+
+            <!-- STAT CARDS -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#fee2e2;color:#b91c1c;">⏰</div>
+                    <div>
+                        <div class="number" id="terlambatTotal">47</div>
+                        <div class="label">Total Keterlambatan</div>
+                    </div>
+                </div>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#fef3c7;color:#b45309;">👤</div>
+                    <div>
+                        <div class="number" id="terlambatDosen">12</div>
+                        <div class="label">Dosen Terlambat</div>
+                    </div>
+                </div>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#dbeafe;color:#1d4ed8;">📊</div>
+                    <div>
+                        <div class="number" id="terlambatRata">12.5</div>
+                        <div class="label">Rata-rata (menit)</div>
+                    </div>
+                </div>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="icon-wrap" style="background:#dcfce7;color:#15803d;">🏆</div>
+                    <div>
+                        <div class="number" id="terlambatTerburuk">45</div>
+                        <div class="label">Terlambat Terburuk</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER -->
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:flex-end;">
+                    <div class="filter-group">
+                        <div class="form-group">
+                            <label>Periode</label>
+                            <select class="form-control" id="terlambatPeriode" onchange="updateTerlambat()">
+                                <option value="harian">Harian</option>
+                                <option value="bulanan" selected>Bulanan</option>
+                                <option value="tahunan">Tahunan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal</label>
+                            <input type="date" class="form-control" id="terlambatDate" value="2026-07-11" onchange="updateTerlambat()">
+                        </div>
+                        <div class="form-group">
+                            <label>Bulan</label>
+                            <select class="form-control" id="terlambatBulan" onchange="updateTerlambat()">
+                                <option value="1">Januari</option>
+                                <option value="2">Februari</option>
+                                <option value="3">Maret</option>
+                                <option value="4">April</option>
+                                <option value="5">Mei</option>
+                                <option value="6">Juni</option>
+                                <option value="7" selected>Juli</option>
+                                <option value="8">Agustus</option>
+                                <option value="9">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tahun</label>
+                            <select class="form-control" id="terlambatTahun" onchange="updateTerlambat()">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026" selected>2026</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="updateTerlambat()">🔍 Tampilkan</button>
+                    </div>
+                    <span style="font-size:0.8rem;color:#94a3b8;" id="terlambatTotalDisplay">Total keterlambatan: <strong>47</strong> kali</span>
+                </div>
+            </div>
+
+            <!-- CHART -->
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div class="card-header">
+                    <h3>📈 Tren Keterlambatan Dosen</h3>
+                    <span style="font-size:0.75rem;color:#94a3b8;">Juli 2026</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="terlambatChart"></canvas>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>⏰ Tabel Keterlambatan Dosen</h3>
+                    <span style="font-size:0.85rem;color:#64748b;">Total: <strong id="terlambatCountDisplay">12</strong> dosen</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nama Dosen</th>
+                                <th>Total Terlambat</th>
+                                <th>Rata-rata (menit)</th>
+                                <th>Terburuk (menit)</th>
+                                <th>Kategori</th>
+                            </tr>
+                        </thead>
+                        <tbody id="terlambatTableBody">
+                            <!-- Data via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                    <span style="font-size:0.8rem;color:#94a3b8;">Menampilkan 1-12 dari 12 data</span>
+                    <div style="display:flex;gap:0.3rem;">
+                        <button class="btn-secondary" style="padding:0.2rem 0.6rem;font-size:0.7rem;">«</button>
+                        <button class="btn-primary" style="padding:0.2rem 0.6rem;font-size:0.7rem;">1</button>
+                        <button class="btn-secondary" style="padding:0.2rem 0.6rem;font-size:0.7rem;">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <div style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #e9edf4;text-align:center;color:#94a3b8;font-size:0.75rem;">
+            Sistem Manajemen Presensi SDM Kampus v2.0 &bull; 2026 &bull; Kaprodi Teknik Informatika
+        </div>
+
+    </main>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ================================================================
+        // DATA DUMMY - PRESENSI
+        // ================================================================
+
+        const presensiDosen = [{
+            nama: 'Dr. Siti Rahayu, M.Kom.',
+            status: 'hadir',
+            jamMasuk: '07:45:00',
+            jamKeluar: '16:15:00',
+            sumber: 'Fingerprint',
+            persentase: 92
+        }, {
+            nama: 'Ir. Bambang Wijaya, M.T.',
+            status: 'terlambat',
+            jamMasuk: '08:15:00',
+            jamKeluar: '16:30:00',
+            sumber: 'Fingerprint',
+            persentase: 85
+        }, {
+            nama: 'Dr. Endang Sulistyowati',
+            status: 'hadir',
+            jamMasuk: '07:50:00',
+            jamKeluar: '15:45:00',
+            sumber: 'Fingerprint',
+            persentase: 95
+        }, {
+            nama: 'Dr. Ratna Dewi, M.Si.',
+            status: 'hadir',
+            jamMasuk: '07:30:00',
+            jamKeluar: '16:00:00',
+            sumber: 'Fingerprint',
+            persentase: 88
+        }, {
+            nama: 'Dr. Budi Santoso',
+            status: 'alpha',
+            jamMasuk: '-',
+            jamKeluar: '-',
+            sumber: '-',
+            persentase: 0
+        }, {
+            nama: 'Dr. Ahmad Fauzi, M.T.',
+            status: 'hadir',
+            jamMasuk: '07:55:00',
+            jamKeluar: '16:10:00',
+            sumber: 'Fingerprint',
+            persentase: 96
+        }, {
+            nama: 'Dr. Rina Dewi, S.E., M.M.',
+            status: 'izin',
+            jamMasuk: '-',
+            jamKeluar: '-',
+            sumber: 'Input Manual Admin',
+            persentase: 75
+        }, {
+            nama: 'Dr. Hendra Gunawan, M.Sc.',
+            status: 'terlambat',
+            jamMasuk: '08:08:00',
+            jamKeluar: '16:20:00',
+            sumber: 'Fingerprint',
+            persentase: 80
+        }, {
+            nama: 'Dr. Nina Sari, M.Kom.',
+            status: 'hadir',
+            jamMasuk: '07:40:00',
+            jamKeluar: '15:50:00',
+            sumber: 'Fingerprint',
+            persentase: 90
+        }, {
+            nama: 'Dr. Agus Salim, M.A.',
+            status: 'cuti',
+            jamMasuk: '-',
+            jamKeluar: '-',
+            sumber: 'Input Manual Admin',
+            persentase: 70
+        }, {
+            nama: 'Dr. Dian Permatasari, S.Pd.',
+            status: 'hadir',
+            jamMasuk: '07:35:00',
+            jamKeluar: '16:05:00',
+            sumber: 'Fingerprint',
+            persentase: 93
+        }, {
+            nama: 'Dr. Rahmat Hidayat, S.Kom.',
+            status: 'terlambat',
+            jamMasuk: '08:05:00',
+            jamKeluar: '16:25:00',
+            sumber: 'Fingerprint',
+            persentase: 78
+        }, {
+            nama: 'Dr. Siti Nurhaliza, M.Kom.',
+            status: 'hadir',
+            jamMasuk: '07:50:00',
+            jamKeluar: '16:00:00',
+            sumber: 'Fingerprint',
+            persentase: 91
+        }, {
+            nama: 'Dr. Bambang Setiawan, M.T.',
+            status: 'hadir',
+            jamMasuk: '07:55:00',
+            jamKeluar: '16:15:00',
+            sumber: 'Fingerprint',
+            persentase: 87
+        }, {
+            nama: 'Dr. Endang Purwanti, M.Si.',
+            status: 'izin',
+            jamMasuk: '-',
+            jamKeluar: '-',
+            sumber: 'Input Manual Admin',
+            persentase: 65
+        }, {
+            nama: 'Dr. Heri Susanto, M.Kom.',
+            status: 'alpha',
+            jamMasuk: '-',
+            jamKeluar: '-',
+            sumber: '-',
+            persentase: 0
+        }, {
+            nama: 'Dr. Lina Marlina, M.Sc.',
+            status: 'hadir',
+            jamMasuk: '07:45:00',
+            jamKeluar: '16:00:00',
+            sumber: 'Fingerprint',
+            persentase: 89
+        }, {
+            nama: 'Dr. Toni Kurniawan, M.T.',
+            status: 'hadir',
+            jamMasuk: '07:50:00',
+            jamKeluar: '16:10:00',
+            sumber: 'Fingerprint',
+            persentase: 94
+        }];
+
+        // ================================================================
+        // DATA DUMMY - KETERLAMBATAN
+        // ================================================================
+
+        const terlambatDosen = [{
+            nama: 'Ir. Bambang Wijaya, M.T.',
+            total: 8,
+            rataRata: 12,
+            terburuk: 20,
+            kategori: 'Cukup Disiplin'
+        }, {
+            nama: 'Dr. Hendra Gunawan, M.Sc.',
+            total: 6,
+            rataRata: 10,
+            terburuk: 15,
+            kategori: 'Cukup Disiplin'
+        }, {
+            nama: 'Dr. Rahmat Hidayat, S.Kom.',
+            total: 5,
+            rataRata: 8,
+            terburuk: 12,
+            kategori: 'Cukup Disiplin'
+        }, {
+            nama: 'Dr. Siti Rahayu, M.Kom.',
+            total: 4,
+            rataRata: 6,
+            terburuk: 10,
+            kategori: 'Sangat Disiplin'
+        }, {
+            nama: 'Dr. Siti Nurhaliza, M.Kom.',
+            total: 3,
+            rataRata: 5,
+            terburuk: 8,
+            kategori: 'Sangat Disiplin'
+        }, {
+            nama: 'Dr. Bambang Setiawan, M.T.',
+            total: 4,
+            rataRata: 7,
+            terburuk: 11,
+            kategori: 'Cukup Disiplin'
+        }, {
+            nama: 'Dr. Rina Dewi, S.E., M.M.',
+            total: 2,
+            rataRata: 4,
+            terburuk: 5,
+            kategori: 'Sangat Disiplin'
+        }, {
+            nama: 'Dr. Nina Sari, M.Kom.',
+            total: 3,
+            rataRata: 5,
+            terburuk: 9,
+            kategori: 'Sangat Disiplin'
+        }, {
+            nama: 'Dr. Dian Permatasari, S.Pd.',
+            total: 2,
+            rataRata: 3,
+            terburuk: 4,
+            kategori: 'Sangat Disiplin'
+        }, {
+            nama: 'Dr. Lina Marlina, M.Sc.',
+            total: 3,
+            rataRata: 6,
+            terburuk: 10,
+            kategori: 'Sangat Disiplin'
+        }, {
+            nama: 'Dr. Toni Kurniawan, M.T.',
+            total: 4,
+            rataRata: 8,
+            terburuk: 14,
+            kategori: 'Cukup Disiplin'
+        }, {
+            nama: 'Dr. Heri Susanto, M.Kom.',
+            total: 3,
+            rataRata: 5,
+            terburuk: 7,
+            kategori: 'Sangat Disiplin'
+        }];
+
+        // ================================================================
+        // CHART - KETERLAMBATAN
+        // ================================================================
+
+        let terlambatChart = null;
+
+        function initTerlambatChart() {
+            const ctx = document.getElementById('terlambatChart').getContext('2d');
+
+            const labels = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'];
+            const data = [14, 12, 11, 10];
+
+            terlambatChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Jumlah Keterlambatan',
+                        data: data,
+                        backgroundColor: 'rgba(180,83,9,0.7)',
+                        borderColor: '#b45309',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        barPercentage: 0.6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleFont: { family: 'Inter', weight: '600', size: 12 },
+                            bodyFont: { family: 'Inter', size: 11 },
+                            cornerRadius: 8,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' kali keterlambatan';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { font: { family: 'Inter', size: 10 }, stepSize: 5 }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================================================================
+        // RENDER FUNCTIONS
+        // ================================================================
+
+        // --- PRESENSI ---
+        function renderPresensi() {
+            const tbody = document.getElementById('presensiTableBody');
+
+            // Update stat cards
+            const totalDosen = presensiDosen.length;
+            const totalHadir = presensiDosen.filter(d => d.status === 'hadir').length;
+            const totalIzin = presensiDosen.filter(d => d.status === 'izin').length;
+            const totalCuti = presensiDosen.filter(d => d.status === 'cuti').length;
+            const totalAlpha = presensiDosen.filter(d => d.status === 'alpha').length;
+            const totalTerlambat = presensiDosen.filter(d => d.status === 'terlambat').length;
+
+            document.getElementById('kehadiranTotalDosen').textContent = totalDosen;
+            document.getElementById('kehadiranTotalHadir').textContent = totalHadir;
+            document.getElementById('kehadiranTotalIzin').textContent = totalIzin;
+            document.getElementById('kehadiranTotalCuti').textContent = totalCuti;
+            document.getElementById('kehadiranTotalAlpha').textContent = totalAlpha;
+            document.getElementById('kehadiranCountDisplay').textContent = totalDosen;
+
+            const statusMap = {
+                'hadir': 'hadir',
+                'izin': 'izin',
+                'cuti': 'cuti',
+                'alpha': 'alpha',
+                'terlambat': 'terlambat'
+            };
+            const statusLabel = {
+                'hadir': 'Hadir',
+                'izin': 'Izin',
+                'cuti': 'Cuti',
+                'alpha': 'Alpha',
+                'terlambat': 'Terlambat'
+            };
+            const sumberMap = {
+                'Fingerprint': 'fingerprint',
+                'Input Manual Admin': 'manual',
+                '-': 'fingerprint'
+            };
+
+            tbody.innerHTML = presensiDosen.map((d, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${d.nama}</strong></td>
+                    <td><span class="badge-status ${statusMap[d.status]}"><span class="dot"></span> ${statusLabel[d.status]}</span></td>
+                    <td style="font-size:0.8rem;color:#64748b;">${d.jamMasuk}</td>
+                    <td style="font-size:0.8rem;color:#64748b;">${d.jamKeluar}</td>
+                    <td><span class="badge-status ${sumberMap[d.sumber]}"><span class="dot"></span> ${d.sumber}</span></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <div style="flex:1;min-width:60px;height:6px;background:#e9edf4;border-radius:4px;overflow:hidden;">
+                                <div style="width:${d.persentase}%;height:100%;background:${d.persentase >= 80 ? '#15803d' : d.persentase >= 50 ? '#b45309' : '#b91c1c'};border-radius:4px;"></div>
+                            </div>
+                            <span style="font-weight:600;font-size:0.8rem;color:${d.persentase >= 80 ? '#15803d' : d.persentase >= 50 ? '#b45309' : '#b91c1c'};min-width:40px;">${d.persentase}%</span>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('presensiTotalDisplay').textContent =
+                `Total kehadiran: ${presensiDosen.length} data`;
+        }
+
+        // --- KETERLAMBATAN ---
+        function renderTerlambat() {
+            const tbody = document.getElementById('terlambatTableBody');
+
+            // Update stat cards
+            const total = terlambatDosen.reduce((sum, d) => sum + d.total, 0);
+            const totalDosen = terlambatDosen.length;
+            const avg = (terlambatDosen.reduce((sum, d) => sum + d.rataRata, 0) / totalDosen);
+            const worst = Math.max(...terlambatDosen.map(d => d.terburuk));
+
+            document.getElementById('terlambatTotal').textContent = total;
+            document.getElementById('terlambatDosen').textContent = totalDosen;
+            document.getElementById('terlambatRata').textContent = avg.toFixed(1);
+            document.getElementById('terlambatTerburuk').textContent = worst;
+            document.getElementById('terlambatCountDisplay').textContent = totalDosen;
+            document.getElementById('terlambatTotalDisplay').textContent =
+                `Total keterlambatan: ${total} kali`;
+
+            const kategoriMap = {
+                'Sangat Disiplin': 'hadir',
+                'Cukup Disiplin': 'izin',
+                'Kurang Disiplin': 'alpha'
+            };
+            const kategoriLabel = {
+                'Sangat Disiplin': 'Sangat Disiplin',
+                'Cukup Disiplin': 'Cukup Disiplin',
+                'Kurang Disiplin': 'Kurang Disiplin'
+            };
+
+            tbody.innerHTML = terlambatDosen.sort((a, b) => b.total - a.total).map((d, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${d.nama}</strong></td>
+                    <td><span class="badge-status ${d.total > 7 ? 'alpha' : d.total > 4 ? 'izin' : 'hadir'}"><span class="dot"></span> ${d.total}x</span></td>
+                    <td style="font-weight:600;color:#b45309;">${d.rataRata} menit</td>
+                    <td style="font-weight:600;color:#b91c1c;">${d.terburuk} menit</td>
+                    <td><span class="badge-status ${kategoriMap[d.kategori]}"><span class="dot"></span> ${kategoriLabel[d.kategori]}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // ================================================================
+        // UPDATE FUNCTIONS
+        // ================================================================
+
+        function updatePresensi() {
+            const periode = document.getElementById('presensiPeriode').value;
+            const bulan = document.getElementById('presensiBulan').value;
+            const tahun = document.getElementById('presensiTahun').value;
+
+            const bulanNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober',
+                'November', 'Desember'
+            ];
+            const label = periode === 'harian' ? 'Harian' :
+                periode === 'bulanan' ? `${bulanNames[parseInt(bulan) - 1]} ${tahun}` :
+                `Tahun ${tahun}`;
+
+            // Simulate filter change
+            renderPresensi();
+            console.log(`📊 Presensi updated: ${label}`);
+        }
+
+        function updateTerlambat() {
+            const periode = document.getElementById('terlambatPeriode').value;
+            const bulan = document.getElementById('terlambatBulan').value;
+            const tahun = document.getElementById('terlambatTahun').value;
+
+            const bulanNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober',
+                'November', 'Desember'
+            ];
+            const label = periode === 'harian' ? 'Harian' :
+                periode === 'bulanan' ? `${bulanNames[parseInt(bulan) - 1]} ${tahun}` :
+                `Tahun ${tahun}`;
+
+            // Update chart data based on filter
+            if (terlambatChart) {
+                const dataMap = {
+                    'harian': [2, 3, 1, 4, 2, 3, 1],
+                    'bulanan': [14, 12, 11, 10],
+                    'tahunan': [120, 95, 87, 78, 92, 85, 96, 88, 79, 84, 91, 86]
+                };
+                const labelsMap = {
+                    'harian': ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    'bulanan': ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+                    'tahunan': ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+                };
+                terlambatChart.data.labels = labelsMap[periode] || labelsMap['bulanan'];
+                terlambatChart.data.datasets[0].data = dataMap[periode] || dataMap['bulanan'];
+                terlambatChart.update();
+            }
+
+            renderTerlambat();
+            console.log(`⏰ Keterlambatan updated: ${label}`);
+        }
+
+        // ================================================================
+        // SIDEBAR
+        // ================================================================
+
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const hamburger = document.getElementById('hamburgerBtn');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        window.closeSidebar = function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        };
+
+        hamburger.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSidebar();
+        });
+
+        // ================================================================
+        // TABS
+        // ================================================================
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+
+                // Re-render chart when terlambat tab is shown
+                if (this.dataset.tab === 'tab-terlambat' && terlambatChart) {
+                    setTimeout(() => {
+                        terlambatChart.resize();
+                    }, 100);
+                }
+            });
+        });
+
+        // ================================================================
+        // NOTIFICATION BELL
+        // ================================================================
+
+        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+            const badge = this.querySelector('.badge');
+            if (badge) {
+                badge.style.display = 'none';
+                alert('📬 Tidak ada notifikasi baru.');
+                setTimeout(() => { badge.style.display = ''; }, 2000);
+            }
+        });
+
+        // ================================================================
+        // INIT
+        // ================================================================
+
+        renderPresensi();
+        renderTerlambat();
+        initTerlambatChart();
+
+        console.log('✅ Monitoring & Presensi page loaded successfully!');
+        console.log(`📋 Total Dosen: ${presensiDosen.length}`);
+        console.log(`✅ Total Hadir: ${presensiDosen.filter(d => d.status === 'hadir').length}`);
+        console.log(`⏰ Total Keterlambatan: ${terlambatDosen.reduce((sum, d) => sum + d.total, 0)}`);
+    </script>
+</body>
+</html>
