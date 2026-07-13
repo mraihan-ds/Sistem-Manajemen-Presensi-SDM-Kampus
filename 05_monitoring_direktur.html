@@ -175,6 +175,7 @@
             position: relative;
             cursor: pointer;
             font-size: 1.3rem;
+            text-decoration: none;
         }
         .top-bar-actions .notif-bell .badge {
             position: absolute;
@@ -199,6 +200,7 @@
             font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
+            text-decoration: none;
         }
         .hamburger {
             display: none;
@@ -590,17 +592,14 @@
         </div>
 
         <nav style="padding: 0.75rem 0 0 0;">
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="05_dashboard_direktur.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">📊</span> Dashboard
             </a>
-            <a class="nav-link active" onclick="closeSidebar()">
+            <a href="05_monitoring_direktur.html" class="nav-link active" onclick="closeSidebar()">
                 <span class="icon">📈</span> Monitoring & Analisis
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="05_laporan_analisis_direktur.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">📄</span> Laporan Strategis
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">👥</span> SDM
             </a>
         </nav>
 
@@ -610,7 +609,7 @@
                 <div class="name">Prof. Dr. Budi Santoso</div>
                 <div class="role">Direktur</div>
             </div>
-            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+            <a href="login.html" style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;text-decoration:none;" title="Logout">⏻</a>
         </div>
     </aside>
 
@@ -627,11 +626,11 @@
                 </div>
             </div>
             <div class="top-bar-actions">
-                <div class="notif-bell" title="Notifikasi">
+                <a href="notifikasi-direktur.html" class="notif-bell" title="Notifikasi">
                     🔔
                     <span class="badge">3</span>
-                </div>
-                <div class="user-avatar" title="Prof. Dr. Budi Santoso">BS</div>
+                </a>
+                <a href="profil-direktur.html" class="user-avatar" title="Prof. Dr. Budi Santoso">BS</a>
             </div>
         </div>
 
@@ -1539,12 +1538,11 @@
         // NOTIFICATION BELL
         // ================================================================
 
-        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+        document.querySelector('.notif-bell')?.addEventListener('click', function(e) {
+            // Biarkan navigasi href berjalan
             const badge = this.querySelector('.badge');
-            if (badge) {
-                badge.style.display = 'none';
-                alert('📬 Tidak ada notifikasi baru.');
-                setTimeout(() => { badge.style.display = ''; }, 2000);
+            if (badge && parseInt(badge.textContent) > 0) {
+                badge.textContent = '0';
             }
         });
 

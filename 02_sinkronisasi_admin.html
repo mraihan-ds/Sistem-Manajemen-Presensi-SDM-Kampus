@@ -173,6 +173,7 @@
             position: relative;
             cursor: pointer;
             font-size: 1.3rem;
+            text-decoration: none;
         }
         .top-bar-actions .notif-bell .badge {
             position: absolute;
@@ -197,6 +198,7 @@
             font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
+            text-decoration: none;
         }
         .hamburger {
             display: none;
@@ -657,30 +659,21 @@
         </div>
 
         <nav style="padding: 0.75rem 0 0 0;">
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_dasboard_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">📊</span> Dashboard
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_pengguna_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">👥</span> Manajemen Pengguna
             </a>
-            <a class="nav-link active" onclick="closeSidebar()">
+            <a href="02_sinkronisasi_admin.html" class="nav-link active" onclick="closeSidebar()">
                 <span class="icon">🔄</span> Integrasi Fingerprint
                 <span class="badge-notif">3</span>
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">📝</span> Kondisi Khusus
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_laporan_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">📄</span> Laporan
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_hal_audit_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">🔍</span> Audit Trail
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">⚙️</span> Parameter
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">📋</span> Jadwal Kerja
             </a>
         </nav>
 
@@ -690,7 +683,7 @@
                 <div class="name">Admin Sistem</div>
                 <div class="role">Administrator</div>
             </div>
-            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+            <a href="login.html" style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;text-decoration:none;" title="Logout">⏻</a>
         </div>
     </aside>
 
@@ -707,11 +700,11 @@
                 </div>
             </div>
             <div class="top-bar-actions">
-                <div class="notif-bell" title="Notifikasi">
+                <a href="notifikasi-admin.html" class="notif-bell" title="Notifikasi">
                     🔔
                     <span class="badge">6</span>
-                </div>
-                <div class="user-avatar" title="Admin Sistem">AS</div>
+                </a>
+                <a href="profil-admin.html" class="user-avatar" title="Admin Sistem">AS</a>
             </div>
         </div>
 
@@ -813,7 +806,7 @@
                 <h3>📋 Log Riwayat Sinkronisasi</h3>
                 <div style="display:flex; gap:0.5rem; align-items:center;">
                     <button class="btn-secondary" style="font-size:0.75rem; padding:0.3rem 0.8rem;" onclick="refreshLogs()">🔄 Refresh</button>
-                    <span class="link-all" onclick="alert('Menampilkan semua log sinkronisasi')">Lihat semua →</span>
+                    <a href="sinkronisasi-log-admin.html" class="link-all">Lihat semua →</a>
                 </div>
             </div>
             <div id="syncLogContainer" style="max-height:280px; overflow-y:auto; padding-right:4px;">
@@ -827,7 +820,7 @@
                 <h3>🔗 Mapping User ID Fingerprint</h3>
                 <div style="display:flex; gap:0.5rem; align-items:center;">
                     <button class="btn-secondary" style="font-size:0.75rem; padding:0.3rem 0.8rem;" onclick="refreshMapping()">🔄 Refresh</button>
-                    <span class="link-all" onclick="alert('Menampilkan semua mapping')">Lihat semua →</span>
+                    <a href="mapping-fingerprint-admin.html" class="link-all">Lihat semua →</a>
                 </div>
             </div>
 
@@ -1341,12 +1334,11 @@
         };
 
         // ===== NOTIFICATION BELL =====
-        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+        document.querySelector('.notif-bell')?.addEventListener('click', function(e) {
+            // Biarkan navigasi href berjalan
             const badge = this.querySelector('.badge');
-            if (badge) {
-                badge.style.display = 'none';
-                alert('📬 Tidak ada notifikasi baru.');
-                setTimeout(() => { badge.style.display = ''; }, 2000);
+            if (badge && parseInt(badge.textContent) > 0) {
+                badge.textContent = '0';
             }
         });
 

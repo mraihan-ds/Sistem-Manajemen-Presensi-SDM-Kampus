@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifikasi · Staf</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .sidebar {
+            background: #0f1a2e;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a2a44;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3b5a82;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            color: #94a9c9;
+            transition: all 0.2s;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #ffffff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .badge-notif {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            border: 1px solid #e9edf4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .filter-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .filter-btn:hover {
+            border-color: #1e3a5f;
+            color: #1e3a5f;
+        }
+        .filter-btn.active {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .notification-item {
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            background: #ffffff;
+            border: 1px solid #e9edf4;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .notification-item:hover {
+            background: #fafcff;
+            border-color: #d0d8e4;
+        }
+        .notification-item.unread {
+            background: #eff6ff;
+            border-left: 4px solid #1e3a5f;
+        }
+        .notification-item.unread:hover {
+            background: #e8f0fe;
+        }
+        .notification-item .time {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        .notification-item .title {
+            font-weight: 600;
+            color: #0f1a2e;
+            font-size: 0.9rem;
+        }
+        .notification-item .desc {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.2rem;
+        }
+        .notification-item .badge-type {
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .badge-approval {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-reject {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-reminder {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .badge-late {
+            background: #fce4ec;
+            color: #c62828;
+        }
+        .badge-system {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        .unread-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #1e3a5f;
+            position: absolute;
+            right: 1rem;
+            top: 1.2rem;
+        }
+        .mark-read-btn {
+            font-size: 0.7rem;
+            color: #1e3a5f;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+        }
+        .mark-read-btn:hover {
+            text-decoration: underline;
+        }
+        .mark-all-btn {
+            padding: 0.4rem 1.2rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mark-all-btn:hover {
+            background: #14304e;
+        }
+        .mark-all-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        .empty-state .icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .empty-state .title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f1a2e;
+        }
+        .empty-state .desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 40;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        @media (max-width: 640px) {
+            .notification-item {
+                padding: 0.75rem 1rem;
+            }
+            .notification-item .title {
+                font-size: 0.8rem;
+            }
+            .notification-item .desc {
+                font-size: 0.75rem;
+            }
+            .filter-group {
+                flex-wrap: wrap;
+                gap: 0.4rem;
+            }
+            .filter-btn {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.7rem;
+            }
+            .stat-card p.text-2xl {
+                font-size: 1.3rem;
+            }
+            .mark-all-btn {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.8rem;
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .toast-notif {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f1a2e;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            max-width: 340px;
+            transform: translateY(120%);
+            transition: transform 0.4s ease;
+            font-size: 0.85rem;
+        }
+        .toast-notif.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2a6 6 0 0 0-6 6v3a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6z" />
+                        <path d="M12 18v3" />
+                        <path d="M8 21h8" />
+                        <path d="M6 11a6 6 0 0 0 12 0" />
+                        <path d="M8 8a4 4 0 0 1 8 0" />
+                        <path d="M10 13a2 2 0 1 1 4 0" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-lg leading-none">Presensi SDM</p>
+                    <p class="text-[#94a9c9] text-xs">Sistem Terintegrasi</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="01_dashboard_staff.html" class="nav-link flex items-center">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a href="01_rekap_presensi_staff.html" class="nav-link flex items-center">
+                <span class="icon">📋</span> Rekap Presensi
+            </a>
+            <a href="01_pengajuan_surat_izin_staff.html" class="nav-link flex items-center">
+                <span class="icon">📝</span> Pengajuan surat izin
+            </a>
+            <a href="01_status_pengajuan_staff.html" class="nav-link flex items-center">
+                <span class="icon">📬</span> Status Pengajuan
+            </a>
+            <a href="01_notifikasi_staff.html" class="nav-link active flex items-center">
+                <span class="icon">🔔</span> Notifikasi
+                <span class="badge-notif" id="sidebarBadge">5</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <a href="#" class="nav-link flex items-center text-red-400 hover:text-red-300 hover:bg-red-950/30">
+                <span class="icon">🚪</span> Logout
+            </a>
+            <div class="mt-3 flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                <div>
+                    <p class="text-white text-sm font-medium">Dr. Siti Rahayu</p>
+                    <p class="text-[#94a9c9] text-xs">Dosen · Teknik Informatika</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-6">
+
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1a2e]">🔔 Notifikasi</h1>
+                    <p class="text-sm text-gray-500">Semua pemberitahuan dan pengingat untuk Anda</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="mark-all-btn" id="markAllBtn">✅ Tandai Semua Dibaca</button>
+                <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">Dr. Siti Rahayu</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === STATISTIK RINGKAS === -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+            <div class="stat-card text-center">
+                <p class="text-xs text-gray-500 font-medium">Total Notifikasi</p>
+                <p class="text-2xl font-bold text-[#0f1a2e]" id="totalNotif">12</p>
+            </div>
+            <div class="stat-card text-center border-blue-200 bg-blue-50/50">
+                <p class="text-xs text-blue-600 font-medium">📖 Belum Dibaca</p>
+                <p class="text-2xl font-bold text-blue-700" id="unreadCount">5</p>
+            </div>
+            <div class="stat-card text-center border-green-200 bg-green-50/50">
+                <p class="text-xs text-green-600 font-medium">✅ Sudah Dibaca</p>
+                <p class="text-2xl font-bold text-green-700" id="readCount">7</p>
+            </div>
+            <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                <p class="text-xs text-yellow-600 font-medium">📝 Approval</p>
+                <p class="text-2xl font-bold text-yellow-700" id="approvalCount">4</p>
+            </div>
+            <div class="stat-card text-center border-red-200 bg-red-50/50">
+                <p class="text-xs text-red-600 font-medium">⏰ Pengingat</p>
+                <p class="text-2xl font-bold text-red-700" id="reminderCount">3</p>
+            </div>
+        </div>
+
+        <!-- === FILTER === -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div class="flex flex-wrap items-center gap-2 filter-group">
+                <button class="filter-btn active" data-filter="all">📋 Semua</button>
+                <button class="filter-btn" data-filter="unread">📖 Belum Dibaca</button>
+                <button class="filter-btn" data-filter="read">✅ Sudah Dibaca</button>
+                <button class="filter-btn" data-filter="approval">📝 Approval</button>
+                <button class="filter-btn" data-filter="reminder">⏰ Pengingat</button>
+                <button class="filter-btn" data-filter="late">⚠️ Keterlambatan</button>
+                <button class="filter-btn" data-filter="system">⚙️ Sistem</button>
+            </div>
+            <span class="text-xs text-gray-400" id="resultCount">Menampilkan 12 notifikasi</span>
+        </div>
+
+        <!-- === NOTIFICATION LIST === -->
+        <div id="notificationList" class="space-y-3">
+            <!-- akan di-render oleh JavaScript -->
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-[0.6rem] text-gray-400 border-t border-gray-200 pt-4">
+            <span>SRS · Sistem Manajemen Presensi SDM Kampus</span>
+            <span class="mx-1.5">•</span>
+            <span>v1.0</span>
+            <span class="mx-1.5">•</span>
+            <span>Halaman Notifikasi</span>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast-notif" id="toastNotif"></div>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== DATA NOTIFIKASI =====
+        const notifikasiData = [{
+            id: 1,
+            type: 'approval',
+            icon: '✅',
+            title: 'Pengajuan cuti disetujui',
+            desc: 'Cuti tahunan 3 hari (15-17 Juli 2026) telah disetujui oleh OSDM.',
+            time: '2026-07-10T08:30:00',
+            read: false,
+            link: '#',
+            badge: 'Disetujui',
+            badgeClass: 'badge-approval'
+        }, {
+            id: 2,
+            type: 'reminder',
+            icon: '⏰',
+            title: 'Pengingat presensi hari ini',
+            desc: 'Anda belum melakukan fingerprint hari ini. Jangan lupa presensi masuk.',
+            time: '2026-07-10T07:00:00',
+            read: false,
+            link: '#',
+            badge: 'Pengingat',
+            badgeClass: 'badge-reminder'
+        }, {
+            id: 3,
+            type: 'approval',
+            icon: '📝',
+            title: 'Pengajuan izin diteruskan ke OSDM',
+            desc: 'Izin dinas luar (9 Juli 2026) telah disetujui oleh Kaprodi. Menunggu persetujuan OSDM.',
+            time: '2026-07-09T10:30:00',
+            read: false,
+            link: '#',
+            badge: 'Menunggu OSDM',
+            badgeClass: 'badge-reminder'
+        }, {
+            id: 4,
+            type: 'late',
+            icon: '⚠️',
+            title: 'Peringatan keterlambatan',
+            desc: 'Anda tercatat terlambat 15 menit pada hari Rabu, 8 Juli 2026.',
+            time: '2026-07-08T08:15:00',
+            read: false,
+            link: '#',
+            badge: 'Terlambat',
+            badgeClass: 'badge-late'
+        }, {
+            id: 5,
+            type: 'system',
+            icon: '⚙️',
+            title: 'Presensi manual diinput oleh Admin',
+            desc: 'Presensi untuk kondisi khusus (dinas luar, 9 Juli 2026) telah diinput oleh Administrator Sistem.',
+            time: '2026-07-09T16:00:00',
+            read: false,
+            link: '#',
+            badge: 'Sistem',
+            badgeClass: 'badge-system'
+        }, {
+            id: 6,
+            type: 'approval',
+            icon: '✅',
+            title: 'Pengajuan kondisi khusus disetujui',
+            desc: 'Laporan kondisi khusus (lupa fingerprint, 4 Juli 2026) telah disetujui oleh OSDM.',
+            time: '2026-07-04T14:20:00',
+            read: true,
+            link: '#',
+            badge: 'Disetujui',
+            badgeClass: 'badge-approval'
+        }, {
+            id: 7,
+            type: 'reject',
+            icon: '❌',
+            title: 'Pengajuan izin ditolak',
+            desc: 'Izin tidak masuk (28 Juni 2026) ditolak oleh Kaprodi. Mohon lengkapi surat keterangan sakit.',
+            time: '2026-06-28T09:15:00',
+            read: true,
+            link: '#',
+            badge: 'Ditolak',
+            badgeClass: 'badge-reject'
+        }, {
+            id: 8,
+            type: 'reminder',
+            icon: '⏰',
+            title: 'Pengingat sisa kuota cuti',
+            desc: 'Sisa kuota cuti tahunan Anda tinggal 9 hari dari 12 hari.',
+            time: '2026-07-01T08:00:00',
+            read: true,
+            link: '#',
+            badge: 'Pengingat',
+            badgeClass: 'badge-reminder'
+        }, {
+            id: 9,
+            type: 'approval',
+            icon: '✅',
+            title: 'Pengajuan cuti disetujui',
+            desc: 'Cuti sakit (21-23 Juni 2026) telah disetujui oleh OSDM.',
+            time: '2026-06-21T08:30:00',
+            read: true,
+            link: '#',
+            badge: 'Disetujui',
+            badgeClass: 'badge-approval'
+        }, {
+            id: 10,
+            type: 'approval',
+            icon: '✅',
+            title: 'Pengajuan izin disetujui',
+            desc: 'Izin kegiatan institusi (11 Juni 2026) telah disetujui oleh OSDM.',
+            time: '2026-06-11T15:20:00',
+            read: true,
+            link: '#',
+            badge: 'Disetujui',
+            badgeClass: 'badge-approval'
+        }, {
+            id: 11,
+            type: 'system',
+            icon: '⚙️',
+            title: 'Presensi manual diinput oleh Admin',
+            desc: 'Presensi untuk kondisi khusus (kegiatan kampus, 2 Juni 2026) telah diinput oleh Administrator Sistem.',
+            time: '2026-06-02T08:15:00',
+            read: true,
+            link: '#',
+            badge: 'Sistem',
+            badgeClass: 'badge-system'
+        }, {
+            id: 12,
+            type: 'reminder',
+            icon: '⏰',
+            title: 'Pengingat presensi',
+            desc: 'Jangan lupa melakukan fingerprint pada jam masuk dan jam pulang kerja.',
+            time: '2026-06-30T06:00:00',
+            read: true,
+            link: '#',
+            badge: 'Pengingat',
+            badgeClass: 'badge-reminder'
+        }];
+
+        // ===== STATE =====
+        let notifikasi = JSON.parse(JSON.stringify(notifikasiData));
+        let currentFilter = 'all';
+
+        // ===== RENDER =====
+        function renderNotifikasi() {
+            const container = document.getElementById('notificationList');
+
+            // Filter
+            let filtered = [...notifikasi];
+            if (currentFilter === 'unread') {
+                filtered = filtered.filter(n => !n.read);
+            } else if (currentFilter === 'read') {
+                filtered = filtered.filter(n => n.read);
+            } else if (currentFilter === 'approval') {
+                filtered = filtered.filter(n => n.type === 'approval' || n.type === 'reject');
+            } else if (currentFilter === 'reminder') {
+                filtered = filtered.filter(n => n.type === 'reminder');
+            } else if (currentFilter === 'late') {
+                filtered = filtered.filter(n => n.type === 'late');
+            } else if (currentFilter === 'system') {
+                filtered = filtered.filter(n => n.type === 'system');
+            }
+
+            // Urutkan: yang belum dibaca di atas, lalu berdasarkan waktu terbaru
+            filtered.sort((a, b) => {
+                if (a.read && !b.read) return 1;
+                if (!a.read && b.read) return -1;
+                return new Date(b.time) - new Date(a.time);
+            });
+
+            // Update count
+            document.getElementById('resultCount').textContent = `Menampilkan ${filtered.length} notifikasi`;
+            document.getElementById('totalNotif').textContent = notifikasi.length;
+            document.getElementById('unreadCount').textContent = notifikasi.filter(n => !n.read).length;
+            document.getElementById('readCount').textContent = notifikasi.filter(n => n.read).length;
+            document.getElementById('approvalCount').textContent = notifikasi.filter(n => n.type === 'approval' || n.type ===
+                'reject').length;
+            document.getElementById('reminderCount').textContent = notifikasi.filter(n => n.type === 'reminder' || n.type ===
+                'late').length;
+
+            // Update sidebar badge
+            const unread = notifikasi.filter(n => !n.read).length;
+            const badge = document.getElementById('sidebarBadge');
+            if (unread > 0) {
+                badge.textContent = unread;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            // Render items
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">📭</span>
+                        <p class="title">Tidak ada notifikasi</p>
+                        <p class="desc">Semua notifikasi sudah dibaca atau belum ada notifikasi baru.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(n => {
+                const timeStr = formatTime(n.time);
+                const readClass = n.read ? '' : 'unread';
+                const dotHtml = n.read ? '' : `<span class="unread-dot"></span>`;
+
+                return `
+                    <div class="notification-item ${readClass} fade-in" data-id="${n.id}" onclick="handleClick(${n.id})">
+                        <div class="flex items-start gap-3">
+                            <span class="text-xl">${n.icon}</span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="title">${n.title}</span>
+                                    <span class="badge-type ${n.badgeClass}">${n.badge}</span>
+                                </div>
+                                <p class="desc">${n.desc}</p>
+                                <div class="flex items-center gap-3 mt-1.5">
+                                    <span class="time">${timeStr}</span>
+                                    ${!n.read ? `<button class="mark-read-btn" onclick="event.stopPropagation(); markRead(${n.id})">Tandai Dibaca</button>` : ''}
+                                    <a href="${n.link}" class="text-xs text-[#1e3a5f] font-medium hover:underline" onclick="event.stopPropagation();">📋 Lihat Detail</a>
+                                </div>
+                            </div>
+                        </div>
+                        ${dotHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===== FORMAT TIME =====
+        function formatTime(dateStr) {
+            const now = new Date();
+            const d = new Date(dateStr);
+            const diffMs = now - d;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Baru saja';
+            if (diffMins < 60) return `${diffMins} menit lalu`;
+            if (diffHours < 24) return `${diffHours} jam lalu`;
+            if (diffDays < 7) return `${diffDays} hari lalu`;
+
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        // ===== MARK READ =====
+        function markRead(id) {
+            const item = notifikasi.find(n => n.id === id);
+            if (item && !item.read) {
+                item.read = true;
+                renderNotifikasi();
+                showToast('✅ 1 notifikasi ditandai sudah dibaca');
+            }
+        }
+
+        // ===== MARK ALL READ =====
+        document.getElementById('markAllBtn').addEventListener('click', function() {
+            const unreadItems = notifikasi.filter(n => !n.read);
+            if (unreadItems.length === 0) {
+                showToast('📭 Semua notifikasi sudah dibaca');
+                return;
+            }
+            notifikasi.forEach(n => n.read = true);
+            renderNotifikasi();
+            showToast(`✅ ${unreadItems.length} notifikasi ditandai sudah dibaca`);
+        });
+
+        // ===== HANDLE CLICK =====
+        function handleClick(id) {
+            const item = notifikasi.find(n => n.id === id);
+            if (item && !item.read) {
+                markRead(id);
+            }
+            // Simulasi navigasi ke detail
+            showToast(`📋 Membuka detail: ${item?.title || 'Notifikasi'}`);
+        }
+
+        // ===== FILTER =====
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderNotifikasi();
+            });
+        });
+
+        // ===== TOAST =====
+        let toastTimeout;
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotif');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== INIT =====
+        renderNotifikasi();
+    </script>
+</body>
+</html>

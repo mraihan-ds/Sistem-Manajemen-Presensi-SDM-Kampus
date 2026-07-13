@@ -173,6 +173,7 @@
             position: relative;
             cursor: pointer;
             font-size: 1.3rem;
+            text-decoration: none;
         }
         .top-bar-actions .notif-bell .badge {
             position: absolute;
@@ -197,6 +198,7 @@
             font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
+            text-decoration: none;
         }
         .hamburger {
             display: none;
@@ -708,27 +710,21 @@
         </div>
 
         <nav style="padding: 0.75rem 0 0 0;">
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_dasboard_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">📊</span> Dashboard
             </a>
-            <a class="nav-link active" onclick="closeSidebar()">
+            <a href="02_pengguna_admin.html" class="nav-link active" onclick="closeSidebar()">
                 <span class="icon">👥</span> Manajemen Pengguna
                 <span class="badge-notif">12</span>
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_sinkronisasi_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">🔄</span> Sinkronisasi
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">📝</span> Kondisi Khusus
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_laporan_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">📄</span> Laporan
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_hal_audit_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">🔍</span> Audit Trail
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">⚙️</span> Parameter
             </a>
         </nav>
 
@@ -738,7 +734,7 @@
                 <div class="name">Admin Sistem</div>
                 <div class="role">Administrator</div>
             </div>
-            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+            <a href="login.html" style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;text-decoration:none;" title="Logout">⏻</a>
         </div>
     </aside>
 
@@ -755,11 +751,11 @@
                 </div>
             </div>
             <div class="top-bar-actions">
-                <div class="notif-bell" title="Notifikasi">
+                <a href="notifikasi-admin.html" class="notif-bell" title="Notifikasi">
                     🔔
                     <span class="badge">6</span>
-                </div>
-                <div class="user-avatar" title="Admin Sistem">AS</div>
+                </a>
+                <a href="profil-admin.html" class="user-avatar" title="Admin Sistem">AS</a>
             </div>
         </div>
 
@@ -1408,12 +1404,11 @@
         }
 
         // ===== NOTIFICATION BELL =====
-        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+        document.querySelector('.notif-bell')?.addEventListener('click', function(e) {
+            // Biarkan navigasi href berjalan
             const badge = this.querySelector('.badge');
-            if (badge) {
-                badge.style.display = 'none';
-                alert('📬 Tidak ada notifikasi baru.');
-                setTimeout(() => { badge.style.display = ''; }, 2000);
+            if (badge && parseInt(badge.textContent) > 0) {
+                badge.textContent = '0';
             }
         });
 

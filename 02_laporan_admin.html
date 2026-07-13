@@ -175,6 +175,7 @@
             position: relative;
             cursor: pointer;
             font-size: 1.3rem;
+            text-decoration: none;
         }
         .top-bar-actions .notif-bell .badge {
             position: absolute;
@@ -199,6 +200,7 @@
             font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
+            text-decoration: none;
         }
         .hamburger {
             display: none;
@@ -629,23 +631,20 @@
         </div>
 
         <nav style="padding: 0.75rem 0 0 0;">
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_dasboard_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">📊</span> Dashboard
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_pengguna_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">👥</span> Manajemen Pengguna
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_sinkronisasi_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">🔄</span> Integrasi Fingerprint
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            <a href="02_hal_audit_admin.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">🔍</span> Audit & Monitoring
             </a>
-            <a class="nav-link active" onclick="closeSidebar()">
+            <a href="02_laporan_admin.html" class="nav-link active" onclick="closeSidebar()">
                 <span class="icon">📄</span> Laporan Sistem
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">⚙️</span> Parameter
             </a>
         </nav>
 
@@ -655,7 +654,7 @@
                 <div class="name">Admin Sistem</div>
                 <div class="role">Administrator</div>
             </div>
-            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+            <a href="login.html" style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;text-decoration:none;" title="Logout">⏻</a>
         </div>
     </aside>
 
@@ -672,11 +671,11 @@
                 </div>
             </div>
             <div class="top-bar-actions">
-                <div class="notif-bell" title="Notifikasi">
+                <a href="notifikasi-admin.html" class="notif-bell" title="Notifikasi">
                     🔔
                     <span class="badge">6</span>
-                </div>
-                <div class="user-avatar" title="Admin Sistem">AS</div>
+                </a>
+                <a href="profil-admin.html" class="user-avatar" title="Admin Sistem">AS</a>
             </div>
         </div>
 
@@ -1130,44 +1129,61 @@
         // ================================================================
 
         // PRESENSI DATA
-        const presensiData = [
-            { nama: 'Dr. Siti Rahayu, M.Kom.', role: 'Dosen', unit: 'Teknik Informatika', hadir: 22, izin: 2, cuti: 0,
-                alpha: 0, terlambat: 1 },
-            { nama: 'Muhammad Fadli, S.Si.', role: 'Staf', unit: 'Sistem Informasi', hadir: 20, izin: 1, cuti: 2, alpha: 1,
-                terlambat: 2 },
-            { nama: 'Dr. Ahmad Fauzi, M.T.', role: 'Kaprodi', unit: 'Teknik Informatika', hadir: 21, izin: 1, cuti: 1,
-                alpha: 1, terlambat: 0 },
-            { nama: 'Rina Dewi, S.E., M.M.', role: 'Atasan Langsung', unit: 'Manajemen', hadir: 19, izin: 3, cuti: 1,
-                alpha: 1, terlambat: 3 },
-            { nama: 'Drs. Haryanto, M.Pd.', role: 'OSDM', unit: 'Rektorat', hadir: 23, izin: 0, cuti: 1, alpha: 0,
-                terlambat: 0 },
-            { nama: 'Prof. Dr. Budi Santoso', role: 'Direktur', unit: 'Rektorat', hadir: 20, izin: 2, cuti: 0, alpha: 2,
-                terlambat: 0 },
-            { nama: 'Admin Sistem', role: 'Administrator', unit: 'Rektorat', hadir: 24, izin: 0, cuti: 0, alpha: 0,
-                terlambat: 0 },
-            { nama: 'Siti Nurhaliza, M.Kom.', role: 'Dosen', unit: 'Sistem Informasi', hadir: 18, izin: 4, cuti: 1, alpha: 1,
-                terlambat: 2 },
-            { nama: 'Rahmat Hidayat, S.Kom.', role: 'Staf', unit: 'Teknik Informatika', hadir: 16, izin: 2, cuti: 3, alpha: 3,
-                terlambat: 1 },
-            { nama: 'Drs. Agus Salim, M.A.', role: 'Kaprodi', unit: 'Akuntansi', hadir: 22, izin: 1, cuti: 0, alpha: 1,
-                terlambat: 1 },
-            { nama: 'Ir. Bambang Wijaya, M.T.', role: 'Dosen', unit: 'Teknik Informatika', hadir: 19, izin: 3, cuti: 1,
-                alpha: 1, terlambat: 2 },
-            { nama: 'Dian Permatasari, S.Pd.', role: 'Staf', unit: 'Rektorat', hadir: 21, izin: 1, cuti: 1, alpha: 1,
-                terlambat: 0 },
-            { nama: 'Dr. Endang Sulistyowati', role: 'Dosen', unit: 'Sistem Informasi', hadir: 17, izin: 2, cuti: 2, alpha: 3,
-                terlambat: 1 },
-            { nama: 'Budi Setiawan, S.Kom.', role: 'Staf', unit: 'Manajemen', hadir: 18, izin: 3, cuti: 0, alpha: 3,
-                terlambat: 2 },
-            { nama: 'Dr. Ratna Dewi, M.Si.', role: 'Dosen', unit: 'Akuntansi', hadir: 20, izin: 2, cuti: 1, alpha: 1,
-                terlambat: 0 },
-            { nama: 'Agus Hermawan, S.E.', role: 'Staf', unit: 'Akuntansi', hadir: 15, izin: 4, cuti: 2, alpha: 3,
-                terlambat: 3 },
-            { nama: 'Prof. Dr. Hendra Gunawan', role: 'Dosen', unit: 'Manajemen', hadir: 21, izin: 1, cuti: 1, alpha: 1,
-                terlambat: 1 },
-            { nama: 'Nina Sari, S.Si.', role: 'Staf', unit: 'Sistem Informasi', hadir: 19, izin: 2, cuti: 1, alpha: 2,
-                terlambat: 1 }
-        ];
+        const presensiData = [{
+            nama: 'Dr. Siti Rahayu, M.Kom.', role: 'Dosen', unit: 'Teknik Informatika', hadir: 22, izin: 2, cuti: 0,
+            alpha: 0, terlambat: 1
+        }, {
+            nama: 'Muhammad Fadli, S.Si.', role: 'Staf', unit: 'Sistem Informasi', hadir: 20, izin: 1, cuti: 2, alpha: 1,
+            terlambat: 2
+        }, {
+            nama: 'Dr. Ahmad Fauzi, M.T.', role: 'Kaprodi', unit: 'Teknik Informatika', hadir: 21, izin: 1, cuti: 1,
+            alpha: 1, terlambat: 0
+        }, {
+            nama: 'Rina Dewi, S.E., M.M.', role: 'Atasan Langsung', unit: 'Manajemen', hadir: 19, izin: 3, cuti: 1,
+            alpha: 1, terlambat: 3
+        }, {
+            nama: 'Drs. Haryanto, M.Pd.', role: 'OSDM', unit: 'Rektorat', hadir: 23, izin: 0, cuti: 1, alpha: 0,
+            terlambat: 0
+        }, {
+            nama: 'Prof. Dr. Budi Santoso', role: 'Direktur', unit: 'Rektorat', hadir: 20, izin: 2, cuti: 0, alpha: 2,
+            terlambat: 0
+        }, {
+            nama: 'Admin Sistem', role: 'Administrator', unit: 'Rektorat', hadir: 24, izin: 0, cuti: 0, alpha: 0,
+            terlambat: 0
+        }, {
+            nama: 'Siti Nurhaliza, M.Kom.', role: 'Dosen', unit: 'Sistem Informasi', hadir: 18, izin: 4, cuti: 1, alpha: 1,
+            terlambat: 2
+        }, {
+            nama: 'Rahmat Hidayat, S.Kom.', role: 'Staf', unit: 'Teknik Informatika', hadir: 16, izin: 2, cuti: 3, alpha: 3,
+            terlambat: 1
+        }, {
+            nama: 'Drs. Agus Salim, M.A.', role: 'Kaprodi', unit: 'Akuntansi', hadir: 22, izin: 1, cuti: 0, alpha: 1,
+            terlambat: 1
+        }, {
+            nama: 'Ir. Bambang Wijaya, M.T.', role: 'Dosen', unit: 'Teknik Informatika', hadir: 19, izin: 3, cuti: 1,
+            alpha: 1, terlambat: 2
+        }, {
+            nama: 'Dian Permatasari, S.Pd.', role: 'Staf', unit: 'Rektorat', hadir: 21, izin: 1, cuti: 1, alpha: 1,
+            terlambat: 0
+        }, {
+            nama: 'Dr. Endang Sulistyowati', role: 'Dosen', unit: 'Sistem Informasi', hadir: 17, izin: 2, cuti: 2, alpha: 3,
+            terlambat: 1
+        }, {
+            nama: 'Budi Setiawan, S.Kom.', role: 'Staf', unit: 'Manajemen', hadir: 18, izin: 3, cuti: 0, alpha: 3,
+            terlambat: 2
+        }, {
+            nama: 'Dr. Ratna Dewi, M.Si.', role: 'Dosen', unit: 'Akuntansi', hadir: 20, izin: 2, cuti: 1, alpha: 1,
+            terlambat: 0
+        }, {
+            nama: 'Agus Hermawan, S.E.', role: 'Staf', unit: 'Akuntansi', hadir: 15, izin: 4, cuti: 2, alpha: 3,
+            terlambat: 3
+        }, {
+            nama: 'Prof. Dr. Hendra Gunawan', role: 'Dosen', unit: 'Manajemen', hadir: 21, izin: 1, cuti: 1, alpha: 1,
+            terlambat: 1
+        }, {
+            nama: 'Nina Sari, S.Si.', role: 'Staf', unit: 'Sistem Informasi', hadir: 19, izin: 2, cuti: 1, alpha: 2,
+            terlambat: 1
+        }];
 
         // SINKRONISASI DATA
         const syncData = [
@@ -1511,12 +1527,11 @@
         // NOTIFICATION BELL
         // ================================================================
 
-        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+        document.querySelector('.notif-bell')?.addEventListener('click', function(e) {
+            // Biarkan navigasi href berjalan
             const badge = this.querySelector('.badge');
-            if (badge) {
-                badge.style.display = 'none';
-                alert('📬 Tidak ada notifikasi baru.');
-                setTimeout(() => { badge.style.display = ''; }, 2000);
+            if (badge && parseInt(badge.textContent) > 0) {
+                badge.textContent = '0';
             }
         });
 

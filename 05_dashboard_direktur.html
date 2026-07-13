@@ -175,6 +175,7 @@
             position: relative;
             cursor: pointer;
             font-size: 1.3rem;
+            text-decoration: none;
         }
         .top-bar-actions .notif-bell .badge {
             position: absolute;
@@ -199,6 +200,7 @@
             font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
+            text-decoration: none;
         }
         .hamburger {
             display: none;
@@ -238,6 +240,16 @@
             font-size: 0.7rem;
             color: #94a3b8;
             font-weight: 400;
+        }
+        .card-header .link-all {
+            color: #1e3a5f;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .card-header .link-all:hover {
+            text-decoration: underline;
         }
 
         /* ===== STAT CARD ===== */
@@ -510,18 +522,15 @@
         </div>
 
         <nav style="padding: 0.75rem 0 0 0;">
-            <a class="nav-link active" onclick="closeSidebar()">
+            <a href="05_dashboard_direktur.html" class="nav-link active" onclick="closeSidebar()">
                 <span class="icon">📊</span> Dashboard
                 <span class="badge-notif">3</span>
+            <a href="05_monitoring_direktur.html" class="nav-link" onclick="closeSidebar()">
+                <span class="icon">📈</span> Monitoring & Analisis
             </a>
-            <a class="nav-link" onclick="closeSidebar()">
+            </a>
+            <a href="05_laporan_analisis_direktur.html" class="nav-link" onclick="closeSidebar()">
                 <span class="icon">📄</span> Laporan Strategis
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">👥</span> SDM
-            </a>
-            <a class="nav-link" onclick="closeSidebar()">
-                <span class="icon">📊</span> Statistik
             </a>
         </nav>
 
@@ -531,7 +540,7 @@
                 <div class="name">Prof. Dr. Budi Santoso</div>
                 <div class="role">Direktur</div>
             </div>
-            <div style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;">⏻</div>
+            <a href="login.html" style="margin-left:auto;color:#94a9c9;cursor:pointer;font-size:1.1rem;text-decoration:none;" title="Logout">⏻</a>
         </div>
     </aside>
 
@@ -548,11 +557,11 @@
                 </div>
             </div>
             <div class="top-bar-actions">
-                <div class="notif-bell" title="Notifikasi">
+                <a href="notifikasi-direktur.html" class="notif-bell" title="Notifikasi">
                     🔔
                     <span class="badge">3</span>
-                </div>
-                <div class="user-avatar" title="Prof. Dr. Budi Santoso">BS</div>
+                </a>
+                <a href="profil-direktur.html" class="user-avatar" title="Prof. Dr. Budi Santoso">BS</a>
             </div>
         </div>
 
@@ -804,7 +813,7 @@
             <div class="card">
                 <div class="card-header">
                     <h3>🔔 Notifikasi Strategis</h3>
-                    <span class="link-all" style="color:#1e3a5f;font-size:0.8rem;font-weight:500;cursor:pointer;" onclick="alert('Menampilkan semua notifikasi strategis')">Lihat semua →</span>
+                    <a href="notifikasi-direktur.html" class="link-all">Lihat semua →</a>
                 </div>
                 <div style="max-height:340px;overflow-y:auto;padding-right:4px;">
                     <div class="notif-item unread">
@@ -1068,16 +1077,14 @@
         // NOTIFICATION BELL
         // ================================================================
 
-        document.querySelector('.notif-bell')?.addEventListener('click', function() {
+        document.querySelector('.notif-bell')?.addEventListener('click', function(e) {
+            // Biarkan navigasi href berjalan
             const badge = this.querySelector('.badge');
             if (badge && parseInt(badge.textContent) > 0) {
                 document.querySelectorAll('.notif-item.unread').forEach(item => {
                     item.classList.remove('unread');
                 });
                 badge.textContent = '0';
-                alert('📬 Semua notifikasi strategis telah dibaca.');
-            } else {
-                alert('📬 Tidak ada notifikasi baru.');
             }
         });
 

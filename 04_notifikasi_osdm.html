@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notifikasi · Staf</title>
+    <title>Notifikasi · OSDM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -79,9 +79,9 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
         }
         .filter-btn {
-            padding: 0.4rem 1rem;
+            padding: 0.35rem 1rem;
             border-radius: 999px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
             transition: all 0.2s;
             border: 1px solid #e9edf4;
@@ -99,7 +99,7 @@
             border-color: #1e3a5f;
         }
         .notification-item {
-            padding: 1rem 1.25rem;
+            padding: 0.9rem 1.1rem;
             border-radius: 14px;
             background: #ffffff;
             border: 1px solid #e9edf4;
@@ -128,9 +128,9 @@
             font-size: 0.9rem;
         }
         .notification-item .desc {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: #64748b;
-            margin-top: 0.2rem;
+            margin-top: 0.15rem;
         }
         .notification-item .badge-type {
             font-size: 0.6rem;
@@ -140,15 +140,15 @@
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
+        .badge-pengajuan {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
         .badge-approval {
             background: #dcfce7;
             color: #15803d;
         }
-        .badge-reject {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        .badge-reminder {
+        .badge-warning {
             background: #fef3c7;
             color: #b45309;
         }
@@ -217,6 +217,19 @@
             font-size: 0.85rem;
             color: #94a3b8;
         }
+        .search-input {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #e9edf4;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            width: 180px;
+            transition: all 0.2s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.12);
+        }
         @media (max-width: 1024px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -254,15 +267,25 @@
                 gap: 0.4rem;
             }
             .filter-btn {
-                font-size: 0.7rem;
-                padding: 0.3rem 0.7rem;
+                font-size: 0.65rem;
+                padding: 0.25rem 0.6rem;
             }
-            .stat-card p.text-2xl {
-                font-size: 1.3rem;
+            .stat-card {
+                padding: 0.75rem 1rem;
+            }
+            .stat-card .text-2xl {
+                font-size: 1.2rem;
             }
             .mark-all-btn {
                 font-size: 0.7rem;
                 padding: 0.3rem 0.8rem;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .notification-actions {
+                flex-direction: column;
+                gap: 0.5rem;
             }
         }
         .fade-in {
@@ -296,6 +319,12 @@
         .toast-notif.show {
             transform: translateY(0);
         }
+        .toast-notif.success {
+            border-left: 4px solid #15803d;
+        }
+        .toast-notif.info {
+            border-left: 4px solid #3b82f6;
+        }
     </style>
 </head>
 <body>
@@ -325,21 +354,21 @@
         </div>
 
         <nav class="p-4 space-y-1">
-            <a href="#" class="nav-link flex items-center">
-                <span class="icon">📊</span> Dashboard
+            <a href="04_dashboard_osdm.html" class="nav-link flex items-center">
+                <span class="icon">📊</span> Dashboard OSDM
             </a>
-            <a href="#" class="nav-link flex items-center">
-                <span class="icon">📋</span> Rekap Presensi
+            <a href="04_monitoring_osdm.html" class="nav-link flex items-center">
+                <span class="icon">📋</span> Monitoring &amp; Presensi
             </a>
-            <a href="#" class="nav-link flex items-center">
-                <span class="icon">📝</span> Pengajuan
+            <a href="04_pengajuan_osdm.html" class="nav-link flex items-center">
+                <span class="icon">📝</span> Persetujuan
             </a>
-            <a href="#" class="nav-link flex items-center">
-                <span class="icon">📬</span> Status Pengajuan
+            <a href="04_laporan_osdm.html" class="nav-link flex items-center">
+                <span class="icon">📊</span> Laporan &amp; Analisis
             </a>
-            <a href="#" class="nav-link active flex items-center">
+            <a href="04_notifikasi_osdm.html" class="nav-link active flex items-center">
                 <span class="icon">🔔</span> Notifikasi
-                <span class="badge-notif" id="sidebarBadge">5</span>
+                <span class="badge-notif" id="sidebarBadge">8</span>
             </a>
         </nav>
 
@@ -348,10 +377,10 @@
                 <span class="icon">🚪</span> Logout
             </a>
             <div class="mt-3 flex items-center gap-3 px-2">
-                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
                 <div>
-                    <p class="text-white text-sm font-medium">Dr. Siti Rahayu</p>
-                    <p class="text-[#94a9c9] text-xs">Dosen · Teknik Informatika</p>
+                    <p class="text-white text-sm font-medium">OSDM Utama</p>
+                    <p class="text-[#94a9c9] text-xs">Organisasi &amp; SDM</p>
                 </div>
             </div>
         </div>
@@ -370,14 +399,14 @@
                 </button>
                 <div>
                     <h1 class="text-2xl font-bold text-[#0f1a2e]">🔔 Notifikasi</h1>
-                    <p class="text-sm text-gray-500">Semua pemberitahuan dan pengingat untuk Anda</p>
+                    <p class="text-sm text-gray-500">Semua pemberitahuan dan pengingat untuk OSDM</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <button class="mark-all-btn" id="markAllBtn">✅ Tandai Semua Dibaca</button>
                 <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
-                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">Dr. Siti Rahayu</span>
-                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">SR</div>
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">OSDM Utama</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
                 </div>
             </div>
         </div>
@@ -386,38 +415,41 @@
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
             <div class="stat-card text-center">
                 <p class="text-xs text-gray-500 font-medium">Total Notifikasi</p>
-                <p class="text-2xl font-bold text-[#0f1a2e]" id="totalNotif">12</p>
+                <p class="text-2xl font-bold text-[#0f1a2e]" id="totalNotif">15</p>
             </div>
             <div class="stat-card text-center border-blue-200 bg-blue-50/50">
                 <p class="text-xs text-blue-600 font-medium">📖 Belum Dibaca</p>
-                <p class="text-2xl font-bold text-blue-700" id="unreadCount">5</p>
+                <p class="text-2xl font-bold text-blue-700" id="unreadCount">8</p>
             </div>
             <div class="stat-card text-center border-green-200 bg-green-50/50">
                 <p class="text-xs text-green-600 font-medium">✅ Sudah Dibaca</p>
                 <p class="text-2xl font-bold text-green-700" id="readCount">7</p>
             </div>
             <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
-                <p class="text-xs text-yellow-600 font-medium">📝 Approval</p>
-                <p class="text-2xl font-bold text-yellow-700" id="approvalCount">4</p>
+                <p class="text-xs text-yellow-600 font-medium">📝 Pengajuan Baru</p>
+                <p class="text-2xl font-bold text-yellow-700" id="pengajuanCount">4</p>
             </div>
             <div class="stat-card text-center border-red-200 bg-red-50/50">
-                <p class="text-xs text-red-600 font-medium">⏰ Pengingat</p>
-                <p class="text-2xl font-bold text-red-700" id="reminderCount">3</p>
+                <p class="text-xs text-red-600 font-medium">⚠️ Peringatan</p>
+                <p class="text-2xl font-bold text-red-700" id="warningCount">3</p>
             </div>
         </div>
 
-        <!-- === FILTER === -->
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <!-- === FILTER & SEARCH === -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5 notification-actions">
             <div class="flex flex-wrap items-center gap-2 filter-group">
                 <button class="filter-btn active" data-filter="all">📋 Semua</button>
                 <button class="filter-btn" data-filter="unread">📖 Belum Dibaca</button>
                 <button class="filter-btn" data-filter="read">✅ Sudah Dibaca</button>
-                <button class="filter-btn" data-filter="approval">📝 Approval</button>
-                <button class="filter-btn" data-filter="reminder">⏰ Pengingat</button>
-                <button class="filter-btn" data-filter="late">⚠️ Keterlambatan</button>
-                <button class="filter-btn" data-filter="system">⚙️ Sistem</button>
+                <button class="filter-btn" data-filter="pengajuan">📝 Pengajuan</button>
+                <button class="filter-btn" data-filter="approval">✅ Approval</button>
+                <button class="filter-btn" data-filter="warning">⚠️ Peringatan</button>
+                <button class="filter-btn" data-filter="late">⏰ Keterlambatan</button>
             </div>
-            <span class="text-xs text-gray-400" id="resultCount">Menampilkan 12 notifikasi</span>
+            <div class="flex items-center gap-2">
+                <input type="text" class="search-input" placeholder="🔍 Cari notifikasi..." id="searchInput" />
+                <span class="text-xs text-gray-400" id="resultCount">15 notifikasi</span>
+            </div>
         </div>
 
         <!-- === NOTIFICATION LIST === -->
@@ -431,7 +463,7 @@
             <span class="mx-1.5">•</span>
             <span>v1.0</span>
             <span class="mx-1.5">•</span>
-            <span>Halaman Notifikasi</span>
+            <span>Halaman Notifikasi OSDM</span>
         </div>
     </main>
 
@@ -440,144 +472,211 @@
 
     <!-- JavaScript -->
     <script>
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== TOAST =====
+        let toastTimeout;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotif');
+            toast.textContent = message;
+            toast.className = 'toast-notif ' + type;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
         // ===== DATA NOTIFIKASI =====
         const notifikasiData = [{
             id: 1,
-            type: 'approval',
-            icon: '✅',
-            title: 'Pengajuan cuti disetujui',
-            desc: 'Cuti tahunan 3 hari (15-17 Juli 2026) telah disetujui oleh OSDM.',
+            type: 'pengajuan',
+            icon: '📝',
+            title: 'Pengajuan izin baru dari Dr. Andi Pratama',
+            desc: 'Izin Dinas Luar untuk tanggal 10 Juli 2026 menunggu persetujuan Anda (Tahap Akhir).',
             time: '2026-07-10T08:30:00',
             read: false,
             link: '#',
-            badge: 'Disetujui',
-            badgeClass: 'badge-approval'
+            badge: 'Pengajuan',
+            badgeClass: 'badge-pengajuan'
         }, {
             id: 2,
-            type: 'reminder',
-            icon: '⏰',
-            title: 'Pengingat presensi hari ini',
-            desc: 'Anda belum melakukan fingerprint hari ini. Jangan lupa presensi masuk.',
-            time: '2026-07-10T07:00:00',
+            type: 'pengajuan',
+            icon: '📝',
+            title: 'Pengajuan cuti baru dari Dr. Siti Rahayu',
+            desc: 'Cuti Tahunan 3 hari (15-17 Juli 2026) menunggu persetujuan Anda (Tahap Akhir).',
+            time: '2026-07-10T07:15:00',
             read: false,
             link: '#',
-            badge: 'Pengingat',
-            badgeClass: 'badge-reminder'
+            badge: 'Pengajuan',
+            badgeClass: 'badge-pengajuan'
         }, {
             id: 3,
-            type: 'approval',
-            icon: '📝',
-            title: 'Pengajuan izin diteruskan ke OSDM',
-            desc: 'Izin dinas luar (9 Juli 2026) telah disetujui oleh Kaprodi. Menunggu persetujuan OSDM.',
-            time: '2026-07-09T10:30:00',
+            type: 'pengajuan',
+            icon: '⚠️',
+            title: 'Pengajuan kondisi khusus dari Agus Wijaya',
+            desc: 'Laporan Kegiatan Kampus (8 Juli 2026) menunggu persetujuan Anda.',
+            time: '2026-07-09T14:30:00',
             read: false,
             link: '#',
-            badge: 'Menunggu OSDM',
-            badgeClass: 'badge-reminder'
+            badge: 'Pengajuan',
+            badgeClass: 'badge-pengajuan'
         }, {
             id: 4,
-            type: 'late',
-            icon: '⚠️',
-            title: 'Peringatan keterlambatan',
-            desc: 'Anda tercatat terlambat 15 menit pada hari Rabu, 8 Juli 2026.',
-            time: '2026-07-08T08:15:00',
+            type: 'pengajuan',
+            icon: '📝',
+            title: 'Pengajuan izin baru dari Dewi Lestari',
+            desc: 'Izin Terlambat untuk tanggal 6 Juli 2026 menunggu persetujuan Anda (Tahap Akhir).',
+            time: '2026-07-09T09:00:00',
             read: false,
             link: '#',
-            badge: 'Terlambat',
-            badgeClass: 'badge-late'
+            badge: 'Pengajuan',
+            badgeClass: 'badge-pengajuan'
         }, {
             id: 5,
-            type: 'system',
-            icon: '⚙️',
-            title: 'Presensi manual diinput oleh Admin',
-            desc: 'Presensi untuk kondisi khusus (dinas luar, 9 Juli 2026) telah diinput oleh Administrator Sistem.',
+            type: 'warning',
+            icon: '⚠️',
+            title: '⚠️ Peringatan Disiplin - Unit Manajemen',
+            desc: 'Unit Manajemen memiliki tingkat alpha tertinggi (5 pegawai) pada bulan Juli 2026.',
+            time: '2026-07-10T06:30:00',
+            read: false,
+            link: '#',
+            badge: 'Peringatan',
+            badgeClass: 'badge-warning'
+        }, {
+            id: 6,
+            type: 'warning',
+            icon: '⚠️',
+            title: '⚠️ Peringatan Keterlambatan - Teknik Informatika',
+            desc: 'Unit Teknik Informatika memiliki rata-rata keterlambatan tertinggi (18 menit) pekan ini.',
             time: '2026-07-09T16:00:00',
             read: false,
             link: '#',
-            badge: 'Sistem',
-            badgeClass: 'badge-system'
-        }, {
-            id: 6,
-            type: 'approval',
-            icon: '✅',
-            title: 'Pengajuan kondisi khusus disetujui',
-            desc: 'Laporan kondisi khusus (lupa fingerprint, 4 Juli 2026) telah disetujui oleh OSDM.',
-            time: '2026-07-04T14:20:00',
-            read: true,
-            link: '#',
-            badge: 'Disetujui',
-            badgeClass: 'badge-approval'
+            badge: 'Peringatan',
+            badgeClass: 'badge-warning'
         }, {
             id: 7,
-            type: 'reject',
-            icon: '❌',
-            title: 'Pengajuan izin ditolak',
-            desc: 'Izin tidak masuk (28 Juni 2026) ditolak oleh Kaprodi. Mohon lengkapi surat keterangan sakit.',
-            time: '2026-06-28T09:15:00',
-            read: true,
+            type: 'late',
+            icon: '⏰',
+            title: '⏰ Keterlambatan - Budi Santoso',
+            desc: 'Budi Santoso (Teknik Informatika) terlambat 25 menit pada hari ini, 10 Juli 2026.',
+            time: '2026-07-10T08:15:00',
+            read: false,
             link: '#',
-            badge: 'Ditolak',
-            badgeClass: 'badge-reject'
+            badge: 'Keterlambatan',
+            badgeClass: 'badge-late'
         }, {
             id: 8,
-            type: 'reminder',
+            type: 'late',
             icon: '⏰',
-            title: 'Pengingat sisa kuota cuti',
-            desc: 'Sisa kuota cuti tahunan Anda tinggal 9 hari dari 12 hari.',
-            time: '2026-07-01T08:00:00',
-            read: true,
+            title: '⏰ Keterlambatan - Siti Rahayu',
+            desc: 'Siti Rahayu (Sistem Informasi) terlambat 18 menit pada hari ini, 10 Juli 2026.',
+            time: '2026-07-10T08:00:00',
+            read: false,
             link: '#',
-            badge: 'Pengingat',
-            badgeClass: 'badge-reminder'
+            badge: 'Keterlambatan',
+            badgeClass: 'badge-late'
         }, {
             id: 9,
             type: 'approval',
             icon: '✅',
-            title: 'Pengajuan cuti disetujui',
-            desc: 'Cuti sakit (21-23 Juni 2026) telah disetujui oleh OSDM.',
-            time: '2026-06-21T08:30:00',
+            title: '✅ Pengajuan disetujui - Rudi Hermawan',
+            desc: 'Cuti Khusus (25-26 Juni 2026) telah disetujui oleh OSDM.',
+            time: '2026-07-08T13:30:00',
             read: true,
             link: '#',
-            badge: 'Disetujui',
+            badge: 'Approval',
             badgeClass: 'badge-approval'
         }, {
             id: 10,
             type: 'approval',
             icon: '✅',
-            title: 'Pengajuan izin disetujui',
-            desc: 'Izin kegiatan institusi (11 Juni 2026) telah disetujui oleh OSDM.',
-            time: '2026-06-11T15:20:00',
+            title: '✅ Pengajuan disetujui - Maya Anggraini',
+            desc: 'Izin Tidak Masuk (20 Juni 2026) telah disetujui oleh OSDM.',
+            time: '2026-07-08T10:00:00',
             read: true,
             link: '#',
-            badge: 'Disetujui',
+            badge: 'Approval',
             badgeClass: 'badge-approval'
         }, {
             id: 11,
+            type: 'approval',
+            icon: '❌',
+            title: '❌ Pengajuan ditolak - Fajar Kurniawan',
+            desc: 'Kondisi Khusus (Kegiatan Kampus, 20 Juni 2026) ditolak. Kegiatan tidak termasuk kategori yang diizinkan.',
+            time: '2026-07-07T16:30:00',
+            read: true,
+            link: '#',
+            badge: 'Approval',
+            badgeClass: 'badge-approval'
+        }, {
+            id: 12,
+            type: 'warning',
+            icon: '⚠️',
+            title: '⚠️ Peringatan Disiplin - Hukum',
+            desc: 'Unit Hukum memiliki tingkat kedisiplinan terendah (Kurang Disiplin) dengan 38 alpha tahun ini.',
+            time: '2026-07-06T14:00:00',
+            read: true,
+            link: '#',
+            badge: 'Peringatan',
+            badgeClass: 'badge-warning'
+        }, {
+            id: 13,
+            type: 'pengajuan',
+            icon: '📝',
+            title: 'Pengajuan kondisi khusus - Rina Sari',
+            desc: 'Laporan Mesin Fingerprint Bermasalah (5 Juli 2026) telah disetujui dan diinput Admin.',
+            time: '2026-07-05T09:00:00',
+            read: true,
+            link: '#',
+            badge: 'Pengajuan',
+            badgeClass: 'badge-pengajuan'
+        }, {
+            id: 14,
+            type: 'approval',
+            icon: '✅',
+            title: '✅ Pengajuan disetujui - Dewi Lestari',
+            desc: 'Kondisi Khusus (Mesin Fingerprint Bermasalah, 5 Juli 2026) telah disetujui.',
+            time: '2026-07-04T15:00:00',
+            read: true,
+            link: '#',
+            badge: 'Approval',
+            badgeClass: 'badge-approval'
+        }, {
+            id: 15,
             type: 'system',
             icon: '⚙️',
-            title: 'Presensi manual diinput oleh Admin',
-            desc: 'Presensi untuk kondisi khusus (kegiatan kampus, 2 Juni 2026) telah diinput oleh Administrator Sistem.',
-            time: '2026-06-02T08:15:00',
+            title: '⚙️ Notifikasi Sistem',
+            desc: 'Laporan bulanan Juli 2026 telah siap diunduh di menu Laporan & Analisis.',
+            time: '2026-07-03T08:00:00',
             read: true,
             link: '#',
             badge: 'Sistem',
             badgeClass: 'badge-system'
-        }, {
-            id: 12,
-            type: 'reminder',
-            icon: '⏰',
-            title: 'Pengingat presensi',
-            desc: 'Jangan lupa melakukan fingerprint pada jam masuk dan jam pulang kerja.',
-            time: '2026-06-30T06:00:00',
-            read: true,
-            link: '#',
-            badge: 'Pengingat',
-            badgeClass: 'badge-reminder'
         }];
 
         // ===== STATE =====
         let notifikasi = JSON.parse(JSON.stringify(notifikasiData));
         let currentFilter = 'all';
+        let currentSearch = '';
 
         // ===== RENDER =====
         function renderNotifikasi() {
@@ -589,14 +688,24 @@
                 filtered = filtered.filter(n => !n.read);
             } else if (currentFilter === 'read') {
                 filtered = filtered.filter(n => n.read);
+            } else if (currentFilter === 'pengajuan') {
+                filtered = filtered.filter(n => n.type === 'pengajuan');
             } else if (currentFilter === 'approval') {
-                filtered = filtered.filter(n => n.type === 'approval' || n.type === 'reject');
-            } else if (currentFilter === 'reminder') {
-                filtered = filtered.filter(n => n.type === 'reminder');
+                filtered = filtered.filter(n => n.type === 'approval');
+            } else if (currentFilter === 'warning') {
+                filtered = filtered.filter(n => n.type === 'warning');
             } else if (currentFilter === 'late') {
                 filtered = filtered.filter(n => n.type === 'late');
-            } else if (currentFilter === 'system') {
-                filtered = filtered.filter(n => n.type === 'system');
+            }
+
+            // Search
+            if (currentSearch.trim()) {
+                const search = currentSearch.toLowerCase().trim();
+                filtered = filtered.filter(n =>
+                    n.title.toLowerCase().includes(search) ||
+                    n.desc.toLowerCase().includes(search) ||
+                    n.badge.toLowerCase().includes(search)
+                );
             }
 
             // Urutkan: yang belum dibaca di atas, lalu berdasarkan waktu terbaru
@@ -606,18 +715,21 @@
                 return new Date(b.time) - new Date(a.time);
             });
 
-            // Update count
-            document.getElementById('resultCount').textContent = `Menampilkan ${filtered.length} notifikasi`;
-            document.getElementById('totalNotif').textContent = notifikasi.length;
-            document.getElementById('unreadCount').textContent = notifikasi.filter(n => !n.read).length;
-            document.getElementById('readCount').textContent = notifikasi.filter(n => n.read).length;
-            document.getElementById('approvalCount').textContent = notifikasi.filter(n => n.type === 'approval' || n.type ===
-                'reject').length;
-            document.getElementById('reminderCount').textContent = notifikasi.filter(n => n.type === 'reminder' || n.type ===
-                'late').length;
+            // Update counts
+            const total = notifikasi.length;
+            const unread = notifikasi.filter(n => !n.read).length;
+            const read = notifikasi.filter(n => n.read).length;
+            const pengajuan = notifikasi.filter(n => n.type === 'pengajuan').length;
+            const warnings = notifikasi.filter(n => n.type === 'warning' || n.type === 'late').length;
+
+            document.getElementById('totalNotif').textContent = total;
+            document.getElementById('unreadCount').textContent = unread;
+            document.getElementById('readCount').textContent = read;
+            document.getElementById('pengajuanCount').textContent = pengajuan;
+            document.getElementById('warningCount').textContent = warnings;
+            document.getElementById('resultCount').textContent = filtered.length + ' notifikasi';
 
             // Update sidebar badge
-            const unread = notifikasi.filter(n => !n.read).length;
             const badge = document.getElementById('sidebarBadge');
             if (unread > 0) {
                 badge.textContent = unread;
@@ -632,7 +744,7 @@
                     <div class="empty-state">
                         <span class="icon">📭</span>
                         <p class="title">Tidak ada notifikasi</p>
-                        <p class="desc">Semua notifikasi sudah dibaca atau belum ada notifikasi baru.</p>
+                        <p class="desc">${currentSearch ? 'Tidak ada hasil yang sesuai dengan pencarian.' : 'Semua notifikasi sudah dibaca atau belum ada notifikasi baru.'}</p>
                     </div>
                 `;
                 return;
@@ -653,10 +765,10 @@
                                     <span class="badge-type ${n.badgeClass}">${n.badge}</span>
                                 </div>
                                 <p class="desc">${n.desc}</p>
-                                <div class="flex items-center gap-3 mt-1.5">
+                                <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                                     <span class="time">${timeStr}</span>
                                     ${!n.read ? `<button class="mark-read-btn" onclick="event.stopPropagation(); markRead(${n.id})">Tandai Dibaca</button>` : ''}
-                                    <a href="${n.link}" class="text-xs text-[#1e3a5f] font-medium hover:underline" onclick="event.stopPropagation();">📋 Lihat Detail</a>
+                                    <a href="${n.link}" class="text-xs text-[#1e3a5f] font-medium hover:underline" onclick="event.stopPropagation(); showToast('📋 Membuka detail: ${n.title}', 'info')">📋 Lihat Detail</a>
                                 </div>
                             </div>
                         </div>
@@ -689,7 +801,7 @@
             if (item && !item.read) {
                 item.read = true;
                 renderNotifikasi();
-                showToast('✅ 1 notifikasi ditandai sudah dibaca');
+                showToast('✅ 1 notifikasi ditandai sudah dibaca', 'success');
             }
         }
 
@@ -697,12 +809,12 @@
         document.getElementById('markAllBtn').addEventListener('click', function() {
             const unreadItems = notifikasi.filter(n => !n.read);
             if (unreadItems.length === 0) {
-                showToast('📭 Semua notifikasi sudah dibaca');
+                showToast('📭 Semua notifikasi sudah dibaca', 'info');
                 return;
             }
             notifikasi.forEach(n => n.read = true);
             renderNotifikasi();
-            showToast(`✅ ${unreadItems.length} notifikasi ditandai sudah dibaca`);
+            showToast(`✅ ${unreadItems.length} notifikasi ditandai sudah dibaca`, 'success');
         });
 
         // ===== HANDLE CLICK =====
@@ -711,8 +823,9 @@
             if (item && !item.read) {
                 markRead(id);
             }
-            // Simulasi navigasi ke detail
-            showToast(`📋 Membuka detail: ${item?.title || 'Notifikasi'}`);
+            if (item) {
+                showToast(`📋 Membuka detail: ${item.title}`, 'info');
+            }
         }
 
         // ===== FILTER =====
@@ -725,36 +838,10 @@
             });
         });
 
-        // ===== TOAST =====
-        let toastTimeout;
-
-        function showToast(message) {
-            const toast = document.getElementById('toastNotif');
-            toast.textContent = message;
-            toast.classList.add('show');
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // ===== SIDEBAR TOGGLE =====
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
-        }
-
-        document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            if (window.innerWidth < 1024) {
-                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
-                    sidebar.classList.remove('open');
-                    overlay.classList.remove('active');
-                }
-            }
+        // ===== SEARCH =====
+        document.getElementById('searchInput').addEventListener('input', function() {
+            currentSearch = this.value;
+            renderNotifikasi();
         });
 
         // ===== INIT =====

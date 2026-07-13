@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Atasan · Presensi SDM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .sidebar {
+            background: #0f1a2e;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a2a44;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3b5a82;
+            border-radius: 10px;
+        }
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        .nav-link {
+            color: #94a9c9;
+            transition: all 0.2s;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover {
+            background: #1a2a44;
+            color: #ffffff;
+        }
+        .nav-link.active {
+            background: #1e3a5f;
+            color: #ffffff;
+        }
+        .nav-link .icon {
+            width: 22px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        .badge-notif {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9edf4;
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        .status-badge {
+            padding: 0.2rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-hadir {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-izin {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-cuti {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .status-alpha {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .status-terlambat {
+            background: #fce4ec;
+            color: #c62828;
+        }
+        .status-menunggu {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .status-disetujui {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            background: #f8fafc;
+            border-left: 4px solid #1e3a5f;
+            transition: all 0.2s;
+        }
+        .notification-item:hover {
+            background: #f1f5f9;
+        }
+        .notification-item.unread {
+            background: #eff6ff;
+            border-left-color: #2563eb;
+        }
+        .notification-item .time {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 40;
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
+        @media (max-width: 640px) {
+            .stat-card {
+                padding: 1rem;
+            }
+            .stat-card .text-2xl {
+                font-size: 1.3rem;
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="p-5 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#1e3a5f] flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 2a6 6 0 0 0-6 6v3a6 6 0 0 0 12 0V8a6 6 0 0 0-6-6z" />
+                        <path d="M12 18v3" />
+                        <path d="M8 21h8" />
+                        <path d="M6 11a6 6 0 0 0 12 0" />
+                        <path d="M8 8a4 4 0 0 1 8 0" />
+                        <path d="M10 13a2 2 0 1 1 4 0" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-lg leading-none">Presensi SDM</p>
+                    <p class="text-[#94a9c9] text-xs">Sistem Terintegrasi</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1">
+            <a href="#" class="nav-link active flex items-center">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📋</span> Rekap Kehadiran Staf
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">⏰</span> Monitoring Keterlambatan
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">📝</span> Persetujuan
+            </a>
+            <a href="#" class="nav-link flex items-center">
+                <span class="icon">🔔</span> Notifikasi
+                <span class="badge-notif">4</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <a href="#" class="nav-link flex items-center text-red-400 hover:text-red-300 hover:bg-red-950/30">
+                <span class="icon">🚪</span> Logout
+            </a>
+            <div class="mt-3 flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">AL</div>
+                <div>
+                    <p class="text-white text-sm font-medium">Budi Santoso</p>
+                    <p class="text-[#94a9c9] text-xs">Atasan · Manajemen</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-6">
+
+        <!-- Top Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg bg-white shadow-sm border border-gray-200">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-[#0f1a2e]">📊 Dashboard</h1>
+                    <p class="text-sm text-gray-500">Ringkasan kehadiran Staf · Unit Manajemen</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 shadow-sm border border-gray-200">
+                    <span class="text-xs text-gray-500">Periode:</span>
+                    <select class="text-xs border-0 bg-transparent font-medium text-[#0f1a2e] focus:outline-none">
+                        <option>Juli 2026</option>
+                        <option>Juni 2026</option>
+                        <option>Mei 2026</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">Budi Santoso</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">BS</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Date & Unit Info -->
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div class="text-sm text-gray-500 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Jumat, 10 Juli 2026</span>
+                <span class="text-gray-300">•</span>
+                <span class="text-green-600 font-medium">Hari Kerja</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+                <span class="font-medium text-[#0f1a2e]">👥 Unit Manajemen</span>
+                <span class="text-gray-300">|</span>
+                <span>Total Staf: 30</span>
+            </div>
+        </div>
+
+        <!-- === STAT CARDS === -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div class="stat-card text-center">
+                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Total Staf</p>
+                <p class="text-3xl font-bold text-[#0f1a2e]">30</p>
+                <p class="text-xs text-gray-400">Unit Manajemen</p>
+            </div>
+            <div class="stat-card text-center border-green-200 bg-green-50/50">
+                <p class="text-xs text-green-600 font-medium uppercase tracking-wider">✅ Hadir</p>
+                <p class="text-3xl font-bold text-green-700">21</p>
+                <p class="text-xs text-green-500">70%</p>
+            </div>
+            <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
+                <p class="text-xs text-yellow-600 font-medium uppercase tracking-wider">📝 Izin</p>
+                <p class="text-3xl font-bold text-yellow-700">4</p>
+                <p class="text-xs text-yellow-500">13.3%</p>
+            </div>
+            <div class="stat-card text-center border-blue-200 bg-blue-50/50">
+                <p class="text-xs text-blue-600 font-medium uppercase tracking-wider">🏖️ Cuti</p>
+                <p class="text-3xl font-bold text-blue-700">3</p>
+                <p class="text-xs text-blue-500">10%</p>
+            </div>
+            <div class="stat-card text-center border-red-200 bg-red-50/50">
+                <p class="text-xs text-red-600 font-medium uppercase tracking-wider">❌ Alpha</p>
+                <p class="text-3xl font-bold text-red-700">2</p>
+                <p class="text-xs text-red-500">6.7%</p>
+            </div>
+        </div>
+
+        <!-- === ROW 2: CHART + PENDING APPROVAL === -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Chart Kehadiran Bulanan -->
+            <div class="lg:col-span-2 stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-[#0f1a2e]">📈 Statistik Kehadiran Bulanan</h3>
+                    <span class="text-xs text-gray-400">Juli 2026</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+                <div class="flex justify-center gap-6 mt-3 text-xs">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#1e3a5f]"></span> Hadir</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#f59e0b]"></span> Izin</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#3b82f6]"></span> Cuti</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#ef4444]"></span> Alpha</span>
+                </div>
+            </div>
+
+            <!-- Pending Approval & Quick Stats -->
+            <div class="space-y-4">
+                <!-- Pending Approval -->
+                <div class="stat-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-[#0f1a2e] text-sm">📝 Menunggu Persetujuan Anda</h3>
+                        <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2.5 py-0.5 rounded-full">4</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-yellow-50 border border-yellow-200">
+                            <div>
+                                <p class="text-sm font-medium text-[#0f1a2e]">📋 Izin</p>
+                                <p class="text-xs text-gray-500">2 pengajuan</p>
+                            </div>
+                            <span class="status-badge status-menunggu">Menunggu</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-yellow-50 border border-yellow-200">
+                            <div>
+                                <p class="text-sm font-medium text-[#0f1a2e]">🏖️ Cuti</p>
+                                <p class="text-xs text-gray-500">1 pengajuan</p>
+                            </div>
+                            <span class="status-badge status-menunggu">Menunggu</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 rounded-lg bg-yellow-50 border border-yellow-200">
+                            <div>
+                                <p class="text-sm font-medium text-[#0f1a2e]">⚠️ Kondisi Khusus</p>
+                                <p class="text-xs text-gray-500">1 pengajuan</p>
+                            </div>
+                            <span class="status-badge status-menunggu">Menunggu</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-200">
+                        <a href="#" class="text-xs text-[#1e3a5f] font-medium hover:underline">Lihat semua pengajuan →</a>
+                    </div>
+                </div>
+
+                <!-- Ringkasan Keterlambatan -->
+                <div class="stat-card">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold text-[#0f1a2e] text-sm">⏰ Ringkasan Keterlambatan</h3>
+                        <span class="text-xs text-gray-400">Hari Ini</span>
+                    </div>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-sm text-gray-600">Total Staf Terlambat</span>
+                        <span class="text-lg font-bold text-orange-700">5</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Rata-rata Keterlambatan</span>
+                        <span class="text-lg font-bold text-orange-700">12 menit</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Terlambat &gt; 30 menit</span>
+                        <span class="text-lg font-bold text-red-700">2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === ROW 3: ALPHA + TERLAMBAT + NOTIFIKASI === -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Daftar Alpha Hari Ini -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-[#0f1a2e]">❌ Staf Alpha Hari Ini</h3>
+                    <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">2</span>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-red-50 border border-red-200">
+                        <div>
+                            <p class="text-sm font-medium text-[#0f1a2e]">Andi Pratama</p>
+                            <p class="text-xs text-gray-500">Staf · Manajemen</p>
+                        </div>
+                        <span class="status-badge status-alpha">Alpha</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-red-50 border border-red-200">
+                        <div>
+                            <p class="text-sm font-medium text-[#0f1a2e]">Rina Sari</p>
+                            <p class="text-xs text-gray-500">Staf · Manajemen</p>
+                        </div>
+                        <span class="status-badge status-alpha">Alpha</span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-200">
+                    <p class="text-xs text-gray-400">Total alpha hari ini: 2 pegawai</p>
+                </div>
+            </div>
+
+            <!-- Daftar Terlambat Hari Ini -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-[#0f1a2e]">🟡 Staf Terlambat Hari Ini</h3>
+                    <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">5</span>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-orange-50 border border-orange-200">
+                        <div>
+                            <p class="text-sm font-medium text-[#0f1a2e]">Agus Wijaya</p>
+                            <p class="text-xs text-gray-500">Staf · Manajemen</p>
+                        </div>
+                        <span class="text-sm font-semibold text-red-600">+15 mnt</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-orange-50 border border-orange-200">
+                        <div>
+                            <p class="text-sm font-medium text-[#0f1a2e]">Doni Saputra</p>
+                            <p class="text-xs text-gray-500">Staf · Manajemen</p>
+                        </div>
+                        <span class="text-sm font-semibold text-red-600">+10 mnt</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-orange-50 border border-orange-200">
+                        <div>
+                            <p class="text-sm font-medium text-[#0f1a2e]">Fajar Kurniawan</p>
+                            <p class="text-xs text-gray-500">Staf · Manajemen</p>
+                        </div>
+                        <span class="text-sm font-semibold text-red-600">+8 mnt</span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-200">
+                    <a href="#" class="text-xs text-[#1e3a5f] font-medium hover:underline">Lihat semua keterlambatan →</a>
+                </div>
+            </div>
+
+            <!-- Notifikasi Terbaru -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-[#0f1a2e]">🔔 Notifikasi Terbaru</h3>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">4 baru</span>
+                </div>
+                <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <div class="notification-item unread">
+                        <div class="flex items-start gap-2">
+                            <span class="text-lg">📝</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-[#0f1a2e]">Pengajuan izin dari Andi</p>
+                                <p class="text-xs text-gray-500">Izin dinas luar menunggu persetujuan Anda</p>
+                                <p class="time mt-0.5">5 menit lalu</p>
+                            </div>
+                            <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>
+                        </div>
+                    </div>
+                    <div class="notification-item unread">
+                        <div class="flex items-start gap-2">
+                            <span class="text-lg">🏖️</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-[#0f1a2e]">Pengajuan cuti dari Rina</p>
+                                <p class="text-xs text-gray-500">Cuti tahunan 2 hari menunggu persetujuan Anda</p>
+                                <p class="time mt-0.5">15 menit lalu</p>
+                            </div>
+                            <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>
+                        </div>
+                    </div>
+                    <div class="notification-item unread">
+                        <div class="flex items-start gap-2">
+                            <span class="text-lg">⚠️</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-[#0f1a2e]">Kondisi khusus dari Agus</p>
+                                <p class="text-xs text-gray-500">Laporan kegiatan kampus menunggu persetujuan</p>
+                                <p class="time mt-0.5">1 jam lalu</p>
+                            </div>
+                            <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>
+                        </div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="flex items-start gap-2">
+                            <span class="text-lg">✅</span>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-[#0f1a2e]">Pengajuan disetujui OSDM</p>
+                                <p class="text-xs text-gray-500">Cuti sakit Doni telah disetujui OSDM</p>
+                                <p class="time mt-0.5">2 jam lalu</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-200">
+                    <a href="#" class="text-xs text-[#1e3a5f] font-medium hover:underline">Lihat semua notifikasi →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-[0.6rem] text-gray-400 border-t border-gray-200 pt-4">
+            <span>SRS · Sistem Manajemen Presensi SDM Kampus</span>
+            <span class="mx-1.5">•</span>
+            <span>v1.0</span>
+            <span class="mx-1.5">•</span>
+            <span>Dashboard Atasan Langsung</span>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !e.target.closest('button[onclick="toggleSidebar()"]')) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+
+        // ===== CHART.JS =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
+                    datasets: [{
+                        label: 'Hadir',
+                        data: [18, 20, 17, 19],
+                        backgroundColor: '#1e3a5f',
+                        borderRadius: 4,
+                    }, {
+                        label: 'Izin',
+                        data: [3, 2, 4, 4],
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4,
+                    }, {
+                        label: 'Cuti',
+                        data: [2, 3, 2, 3],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4,
+                    }, {
+                        label: 'Alpha',
+                        data: [2, 1, 2, 2],
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f1a2e',
+                            titleColor: '#ffffff',
+                            bodyColor: '#94a9c9',
+                            cornerRadius: 10,
+                            padding: 10,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 5,
+                                font: { size: 10 },
+                                color: '#94a3b8'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.04)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 }, color: '#94a3b8' }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                }
+            });
+        });
+
+        // ===== ANIMATION =====
+        document.querySelectorAll('.stat-card').forEach((card, index) => {
+            card.style.animationDelay = (index * 0.05) + 's';
+            card.classList.add('fade-in');
+        });
+    </script>
+</body>
+</html>

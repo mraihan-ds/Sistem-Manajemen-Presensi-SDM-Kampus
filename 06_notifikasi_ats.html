@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notifikasi · OSDM</title>
+    <title>Notifikasi · Atasan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -148,13 +148,9 @@
             background: #dcfce7;
             color: #15803d;
         }
-        .badge-warning {
-            background: #fef3c7;
-            color: #b45309;
-        }
-        .badge-late {
-            background: #fce4ec;
-            color: #c62828;
+        .badge-reject {
+            background: #fee2e2;
+            color: #b91c1c;
         }
         .badge-system {
             background: #e0e7ff;
@@ -355,7 +351,7 @@
 
         <nav class="p-4 space-y-1">
             <a href="#" class="nav-link flex items-center">
-                <span class="icon">📊</span> Dashboard OSDM
+                <span class="icon">📊</span> Dashboard
             </a>
             <a href="#" class="nav-link flex items-center">
                 <span class="icon">📋</span> Monitoring &amp; Presensi
@@ -363,12 +359,9 @@
             <a href="#" class="nav-link flex items-center">
                 <span class="icon">📝</span> Persetujuan
             </a>
-            <a href="#" class="nav-link flex items-center">
-                <span class="icon">📊</span> Laporan &amp; Analisis
-            </a>
             <a href="#" class="nav-link active flex items-center">
                 <span class="icon">🔔</span> Notifikasi
-                <span class="badge-notif" id="sidebarBadge">8</span>
+                <span class="badge-notif" id="sidebarBadge">4</span>
             </a>
         </nav>
 
@@ -377,10 +370,10 @@
                 <span class="icon">🚪</span> Logout
             </a>
             <div class="mt-3 flex items-center gap-3 px-2">
-                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
+                <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">AL</div>
                 <div>
-                    <p class="text-white text-sm font-medium">OSDM Utama</p>
-                    <p class="text-[#94a9c9] text-xs">Organisasi &amp; SDM</p>
+                    <p class="text-white text-sm font-medium">Budi Santoso</p>
+                    <p class="text-[#94a9c9] text-xs">Atasan · Manajemen</p>
                 </div>
             </div>
         </div>
@@ -399,14 +392,14 @@
                 </button>
                 <div>
                     <h1 class="text-2xl font-bold text-[#0f1a2e]">🔔 Notifikasi</h1>
-                    <p class="text-sm text-gray-500">Semua pemberitahuan dan pengingat untuk OSDM</p>
+                    <p class="text-sm text-gray-500">Semua pemberitahuan untuk Atasan Langsung</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <button class="mark-all-btn" id="markAllBtn">✅ Tandai Semua Dibaca</button>
                 <div class="flex items-center gap-2 bg-white rounded-full pl-3 pr-1 py-1 shadow-sm border border-gray-200">
-                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">OSDM Utama</span>
-                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">OS</div>
+                    <span class="text-sm font-medium text-gray-700 hidden sm:inline">Budi Santoso</span>
+                    <div class="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-bold text-sm">BS</div>
                 </div>
             </div>
         </div>
@@ -415,23 +408,23 @@
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
             <div class="stat-card text-center">
                 <p class="text-xs text-gray-500 font-medium">Total Notifikasi</p>
-                <p class="text-2xl font-bold text-[#0f1a2e]" id="totalNotif">15</p>
+                <p class="text-2xl font-bold text-[#0f1a2e]" id="totalNotif">10</p>
             </div>
             <div class="stat-card text-center border-blue-200 bg-blue-50/50">
                 <p class="text-xs text-blue-600 font-medium">📖 Belum Dibaca</p>
-                <p class="text-2xl font-bold text-blue-700" id="unreadCount">8</p>
+                <p class="text-2xl font-bold text-blue-700" id="unreadCount">4</p>
             </div>
             <div class="stat-card text-center border-green-200 bg-green-50/50">
                 <p class="text-xs text-green-600 font-medium">✅ Sudah Dibaca</p>
-                <p class="text-2xl font-bold text-green-700" id="readCount">7</p>
+                <p class="text-2xl font-bold text-green-700" id="readCount">6</p>
             </div>
             <div class="stat-card text-center border-yellow-200 bg-yellow-50/50">
                 <p class="text-xs text-yellow-600 font-medium">📝 Pengajuan Baru</p>
                 <p class="text-2xl font-bold text-yellow-700" id="pengajuanCount">4</p>
             </div>
-            <div class="stat-card text-center border-red-200 bg-red-50/50">
-                <p class="text-xs text-red-600 font-medium">⚠️ Peringatan</p>
-                <p class="text-2xl font-bold text-red-700" id="warningCount">3</p>
+            <div class="stat-card text-center border-green-200 bg-green-50/50">
+                <p class="text-xs text-green-600 font-medium">✅ Hasil Approval</p>
+                <p class="text-2xl font-bold text-green-700" id="approvalCount">4</p>
             </div>
         </div>
 
@@ -442,13 +435,11 @@
                 <button class="filter-btn" data-filter="unread">📖 Belum Dibaca</button>
                 <button class="filter-btn" data-filter="read">✅ Sudah Dibaca</button>
                 <button class="filter-btn" data-filter="pengajuan">📝 Pengajuan</button>
-                <button class="filter-btn" data-filter="approval">✅ Approval</button>
-                <button class="filter-btn" data-filter="warning">⚠️ Peringatan</button>
-                <button class="filter-btn" data-filter="late">⏰ Keterlambatan</button>
+                <button class="filter-btn" data-filter="approval">✅ Hasil Approval</button>
             </div>
             <div class="flex items-center gap-2">
                 <input type="text" class="search-input" placeholder="🔍 Cari notifikasi..." id="searchInput" />
-                <span class="text-xs text-gray-400" id="resultCount">15 notifikasi</span>
+                <span class="text-xs text-gray-400" id="resultCount">10 notifikasi</span>
             </div>
         </div>
 
@@ -463,7 +454,7 @@
             <span class="mx-1.5">•</span>
             <span>v1.0</span>
             <span class="mx-1.5">•</span>
-            <span>Halaman Notifikasi OSDM</span>
+            <span>Halaman Notifikasi · Atasan Langsung</span>
         </div>
     </main>
 
@@ -510,163 +501,108 @@
             id: 1,
             type: 'pengajuan',
             icon: '📝',
-            title: 'Pengajuan izin baru dari Dr. Andi Pratama',
-            desc: 'Izin Dinas Luar untuk tanggal 10 Juli 2026 menunggu persetujuan Anda (Tahap Akhir).',
+            title: 'Pengajuan izin baru dari Agus Wijaya',
+            desc: 'Izin Dinas Luar untuk tanggal 10 Juli 2026 menunggu persetujuan Anda (Tahap 1).',
             time: '2026-07-10T08:30:00',
             read: false,
             link: '#',
-            badge: 'Pengajuan',
+            badge: 'Pengajuan Baru',
             badgeClass: 'badge-pengajuan'
         }, {
             id: 2,
             type: 'pengajuan',
             icon: '📝',
-            title: 'Pengajuan cuti baru dari Dr. Siti Rahayu',
-            desc: 'Cuti Tahunan 3 hari (15-17 Juli 2026) menunggu persetujuan Anda (Tahap Akhir).',
+            title: 'Pengajuan cuti baru dari Doni Saputra',
+            desc: 'Cuti Tahunan 2 hari (15-16 Juli 2026) menunggu persetujuan Anda (Tahap 1).',
             time: '2026-07-10T07:15:00',
             read: false,
             link: '#',
-            badge: 'Pengajuan',
+            badge: 'Pengajuan Baru',
             badgeClass: 'badge-pengajuan'
         }, {
             id: 3,
             type: 'pengajuan',
             icon: '⚠️',
             title: 'Pengajuan kondisi khusus dari Agus Wijaya',
-            desc: 'Laporan Kegiatan Kampus (8 Juli 2026) menunggu persetujuan Anda.',
+            desc: 'Laporan Kegiatan Kampus (10 Juli 2026) menunggu persetujuan Anda (Tahap 1).',
             time: '2026-07-09T14:30:00',
             read: false,
             link: '#',
-            badge: 'Pengajuan',
+            badge: 'Pengajuan Baru',
             badgeClass: 'badge-pengajuan'
         }, {
             id: 4,
             type: 'pengajuan',
             icon: '📝',
-            title: 'Pengajuan izin baru dari Dewi Lestari',
-            desc: 'Izin Terlambat untuk tanggal 6 Juli 2026 menunggu persetujuan Anda (Tahap Akhir).',
+            title: 'Pengajuan izin baru dari Doni Saputra',
+            desc: 'Izin Terlambat untuk tanggal 9 Juli 2026 menunggu persetujuan Anda (Tahap 1).',
             time: '2026-07-09T09:00:00',
             read: false,
             link: '#',
-            badge: 'Pengajuan',
+            badge: 'Pengajuan Baru',
             badgeClass: 'badge-pengajuan'
         }, {
             id: 5,
-            type: 'warning',
-            icon: '⚠️',
-            title: '⚠️ Peringatan Disiplin - Unit Manajemen',
-            desc: 'Unit Manajemen memiliki tingkat alpha tertinggi (5 pegawai) pada bulan Juli 2026.',
-            time: '2026-07-10T06:30:00',
-            read: false,
+            type: 'approval',
+            icon: '✅',
+            title: '✅ Pengajuan disetujui OSDM - Fajar Kurniawan',
+            desc: 'Izin Kegiatan Institusi (8 Juli 2026) telah disetujui oleh OSDM.',
+            time: '2026-07-08T16:00:00',
+            read: true,
             link: '#',
-            badge: 'Peringatan',
-            badgeClass: 'badge-warning'
+            badge: 'Disetujui OSDM',
+            badgeClass: 'badge-approval'
         }, {
             id: 6,
-            type: 'warning',
-            icon: '⚠️',
-            title: '⚠️ Peringatan Keterlambatan - Teknik Informatika',
-            desc: 'Unit Teknik Informatika memiliki rata-rata keterlambatan tertinggi (18 menit) pekan ini.',
-            time: '2026-07-09T16:00:00',
-            read: false,
+            type: 'approval',
+            icon: '✅',
+            title: '✅ Pengajuan disetujui OSDM - Siti Rahayu',
+            desc: 'Izin Tidak Masuk (5 Juli 2026) telah disetujui oleh OSDM.',
+            time: '2026-07-05T11:30:00',
+            read: true,
             link: '#',
-            badge: 'Peringatan',
-            badgeClass: 'badge-warning'
+            badge: 'Disetujui OSDM',
+            badgeClass: 'badge-approval'
         }, {
             id: 7,
-            type: 'late',
-            icon: '⏰',
-            title: '⏰ Keterlambatan - Budi Santoso',
-            desc: 'Budi Santoso (Teknik Informatika) terlambat 25 menit pada hari ini, 10 Juli 2026.',
-            time: '2026-07-10T08:15:00',
-            read: false,
+            type: 'approval',
+            icon: '✅',
+            title: '✅ Pengajuan disetujui OSDM - Rina Sari',
+            desc: 'Izin Dinas Luar (3 Juli 2026) telah disetujui oleh OSDM.',
+            time: '2026-07-03T14:00:00',
+            read: true,
             link: '#',
-            badge: 'Keterlambatan',
-            badgeClass: 'badge-late'
+            badge: 'Disetujui OSDM',
+            badgeClass: 'badge-approval'
         }, {
             id: 8,
-            type: 'late',
-            icon: '⏰',
-            title: '⏰ Keterlambatan - Siti Rahayu',
-            desc: 'Siti Rahayu (Sistem Informasi) terlambat 18 menit pada hari ini, 10 Juli 2026.',
-            time: '2026-07-10T08:00:00',
-            read: false,
-            link: '#',
-            badge: 'Keterlambatan',
-            badgeClass: 'badge-late'
-        }, {
-            id: 9,
-            type: 'approval',
-            icon: '✅',
-            title: '✅ Pengajuan disetujui - Rudi Hermawan',
-            desc: 'Cuti Khusus (25-26 Juni 2026) telah disetujui oleh OSDM.',
-            time: '2026-07-08T13:30:00',
-            read: true,
-            link: '#',
-            badge: 'Approval',
-            badgeClass: 'badge-approval'
-        }, {
-            id: 10,
-            type: 'approval',
-            icon: '✅',
-            title: '✅ Pengajuan disetujui - Maya Anggraini',
-            desc: 'Izin Tidak Masuk (20 Juni 2026) telah disetujui oleh OSDM.',
-            time: '2026-07-08T10:00:00',
-            read: true,
-            link: '#',
-            badge: 'Approval',
-            badgeClass: 'badge-approval'
-        }, {
-            id: 11,
             type: 'approval',
             icon: '❌',
-            title: '❌ Pengajuan ditolak - Fajar Kurniawan',
-            desc: 'Kondisi Khusus (Kegiatan Kampus, 20 Juni 2026) ditolak. Kegiatan tidak termasuk kategori yang diizinkan.',
-            time: '2026-07-07T16:30:00',
+            title: '❌ Pengajuan ditolak OSDM - Andi Pratama',
+            desc: 'Izin Kegiatan Institusi (28 Juni 2026) ditolak oleh OSDM. Surat tugas tidak lengkap.',
+            time: '2026-06-28T15:30:00',
             read: true,
             link: '#',
-            badge: 'Approval',
-            badgeClass: 'badge-approval'
+            badge: 'Ditolak OSDM',
+            badgeClass: 'badge-reject'
         }, {
-            id: 12,
-            type: 'warning',
-            icon: '⚠️',
-            title: '⚠️ Peringatan Disiplin - Hukum',
-            desc: 'Unit Hukum memiliki tingkat kedisiplinan terendah (Kurang Disiplin) dengan 38 alpha tahun ini.',
-            time: '2026-07-06T14:00:00',
-            read: true,
-            link: '#',
-            badge: 'Peringatan',
-            badgeClass: 'badge-warning'
-        }, {
-            id: 13,
-            type: 'pengajuan',
-            icon: '📝',
-            title: 'Pengajuan kondisi khusus - Rina Sari',
-            desc: 'Laporan Mesin Fingerprint Bermasalah (5 Juli 2026) telah disetujui dan diinput Admin.',
-            time: '2026-07-05T09:00:00',
-            read: true,
-            link: '#',
-            badge: 'Pengajuan',
-            badgeClass: 'badge-pengajuan'
-        }, {
-            id: 14,
-            type: 'approval',
-            icon: '✅',
-            title: '✅ Pengajuan disetujui - Dewi Lestari',
-            desc: 'Kondisi Khusus (Mesin Fingerprint Bermasalah, 5 Juli 2026) telah disetujui.',
-            time: '2026-07-04T15:00:00',
-            read: true,
-            link: '#',
-            badge: 'Approval',
-            badgeClass: 'badge-approval'
-        }, {
-            id: 15,
+            id: 9,
             type: 'system',
             icon: '⚙️',
             title: '⚙️ Notifikasi Sistem',
-            desc: 'Laporan bulanan Juli 2026 telah siap diunduh di menu Laporan & Analisis.',
-            time: '2026-07-03T08:00:00',
+            desc: 'Laporan monitoring Unit Manajemen bulan Juli 2026 telah tersedia.',
+            time: '2026-07-10T06:00:00',
+            read: true,
+            link: '#',
+            badge: 'Sistem',
+            badgeClass: 'badge-system'
+        }, {
+            id: 10,
+            type: 'system',
+            icon: '⚙️',
+            title: '⚙️ Pengingat Persetujuan',
+            desc: 'Ada 4 pengajuan yang menunggu persetujuan Anda. Segera tinjau dan berikan keputusan.',
+            time: '2026-07-09T07:00:00',
             read: true,
             link: '#',
             badge: 'Sistem',
@@ -692,10 +628,6 @@
                 filtered = filtered.filter(n => n.type === 'pengajuan');
             } else if (currentFilter === 'approval') {
                 filtered = filtered.filter(n => n.type === 'approval');
-            } else if (currentFilter === 'warning') {
-                filtered = filtered.filter(n => n.type === 'warning');
-            } else if (currentFilter === 'late') {
-                filtered = filtered.filter(n => n.type === 'late');
             }
 
             // Search
@@ -720,13 +652,13 @@
             const unread = notifikasi.filter(n => !n.read).length;
             const read = notifikasi.filter(n => n.read).length;
             const pengajuan = notifikasi.filter(n => n.type === 'pengajuan').length;
-            const warnings = notifikasi.filter(n => n.type === 'warning' || n.type === 'late').length;
+            const approval = notifikasi.filter(n => n.type === 'approval').length;
 
             document.getElementById('totalNotif').textContent = total;
             document.getElementById('unreadCount').textContent = unread;
             document.getElementById('readCount').textContent = read;
             document.getElementById('pengajuanCount').textContent = pengajuan;
-            document.getElementById('warningCount').textContent = warnings;
+            document.getElementById('approvalCount').textContent = approval;
             document.getElementById('resultCount').textContent = filtered.length + ' notifikasi';
 
             // Update sidebar badge
